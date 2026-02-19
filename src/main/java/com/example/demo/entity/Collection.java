@@ -12,11 +12,11 @@ import java.util.Date;
 @Data
 @TableName("article_collection")
 public class Collection {
-    @TableId(type = IdType.AUTO)
-    private Integer id;
-    private String userAccount;
-    private Integer articleId;
+    private String userAccount;  // 用户账号
+    private Integer articleId;   // 文章ID
     
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
+    
+    // 移除id字段，使用(userAccount, articleId)作为复合主键
 }

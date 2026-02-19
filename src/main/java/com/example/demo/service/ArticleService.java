@@ -43,11 +43,15 @@ public class ArticleService {
 
     /**
      * 为文章点赞
+     * 注意：由于表结构中没有like_count字段，此方法暂时不可用
      */
     @CacheEvict(value = "article", key = "#articleId")
     public String likeArticle(String articleId) {
-        int rows = articleMapper.incrementLikeCount(Integer.parseInt(articleId));
-        return rows > 0 ? "点赞成功" : "点赞失败";
+        // 由于数据库表结构中没有like_count字段，暂时返回提示信息
+        return "点赞功能暂未实现";
+        // 原来的实现：
+        // int rows = articleMapper.incrementLikeCount(Integer.parseInt(articleId));
+        // return rows > 0 ? "点赞成功" : "点赞失败";
     }
 
     /**

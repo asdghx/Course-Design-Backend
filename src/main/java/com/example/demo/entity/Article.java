@@ -21,14 +21,10 @@ public class Article {
     private String content;
     private String authorAccount;
     
-    private Integer viewCount; // 浏览次数
-    private Integer likeCount; // 点赞次数
+    private Integer viewCount = 0; // 浏览次数，默认值0
     
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
     
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-    
-    private Integer status; // 文章状态：1=发布，0=草稿
+    // 移除likeCount和updateTime字段，与SQL结构保持一致
 }

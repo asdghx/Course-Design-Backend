@@ -13,17 +13,17 @@
     <!-- 分页查询用户收藏的文章 -->
     <select id="selectCollectedArticles" resultType="com.example.demo.entity.Article">
         SELECT a.id, a.author_account, a.article_type, a.title, a.publish_date, 
-               a.content, a.view_count, a.like_count, a.create_time
+               a.content, a.view_count, a.create_time
         FROM article_info a
         INNER JOIN article_collection ac ON a.id = ac.article_id
-        WHERE ac.user_account = #{userAccount} AND a.status = 1
+        WHERE ac.user_account = #{userAccount}
         ORDER BY ac.create_time DESC
     </select>
     
     <!-- 添加文章收藏 -->
     <insert id="insertCollection" parameterType="com.example.demo.entity.Collection">
-        INSERT INTO article_collection (article_id, user_account) 
-        VALUES (#{articleId}, #{userAccount})
+        INSERT INTO article_collection (user_account, article_id, create_time) 
+        VALUES (#{userAccount}, #{articleId}, NOW())
     </insert>
     
     <!-- 删除文章收藏 -->
