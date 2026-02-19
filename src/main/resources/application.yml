@@ -1,0 +1,37 @@
+server:
+  port: 8080 # 服务端口，对应前端请求的端口
+  address: 0.0.0.0 # 监听所有网络接口
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher # 解决Swagger与Spring Boot 2.7兼容性问题
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver # MySQL驱动类
+    url: jdbc:mysql://localhost:3306/xg_ptj?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true # 数据库连接URL
+    username: root # 数据库用户名
+    password: 123456 # 数据库密码
+    hikari:
+      maximum-pool-size: 20 # 连接池最大连接数
+      minimum-idle: 5 # 连接池最小空闲连接数
+      connection-timeout: 20000 # 连接超时时间（毫秒）
+      idle-timeout: 300000 # 空闲连接超时时间（毫秒）
+      max-lifetime: 1200000 # 连接最大生存时间（毫秒）
+      pool-name: HikariCP-pool # 连接池名称
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true # 下划线字段自动转驼峰命名（如user_type → userType）
+    # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # SQL日志输出
+  mapper-locations: classpath:mapper/*.xml # Mapper XML文件位置（如有需要）
+  global-config:
+    db-config:
+      logic-delete-field: deleted # 逻辑删除字段名
+      logic-delete-value: 1 # 逻辑删除值
+      logic-not-delete-value: 0 # 逻辑未删除值
+
+logging:
+  level:
+    com.example.demo: debug # 应用日志级别
+    org.springframework: info # Spring框架日志级别
+    com.baomidou.mybatisplus: debug # MyBatis-Plus日志级别

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.CollectionMapper">
+
+    <!-- 根据用户账号和文章ID查询收藏记录 -->
+    <select id="selectByUserAndArticle" resultType="com.example.demo.entity.Collection">
+        SELECT * 
+        FROM article_collection 
+        WHERE user_account = #{userAccount} 
+        AND article_id = #{articleId}
+    </select>
+
+    <!-- 分页查询用户收藏的文章 -->
+    <select id="selectCollectedArticles" resultType="com.example.demo.entity.Article">
+        SELECT a.id, a.author_account, a.article_type, a.title, a.publish_date, 
+               a.content, a.view_count, a.like_count, a.create_time
+        FROM article_info a
+        INNER JOIN article_collection ac ON a.id = ac.article_id
+        WHERE ac.user_account = #{userAccount} AND a.status = 1
+        ORDER BY ac.create_time DESC
+    </select>
+    
+    <!-- 添加文章收藏 -->
+    <insert id="insertCollection" parameterType="com.example.demo.entity.Collection">
+        INSERT INTO article_collection (article_id, user_account) 
+        VALUES (#{articleId}, #{userAccount})
+    </insert>
+    
+    <!-- 删除文章收藏 -->
+    <delete id="deleteCollection">
+        DELETE FROM article_collection 
+        WHERE article_id = #{articleId} AND user_account = #{userAccount}
+    </delete>
+
+</mapper>

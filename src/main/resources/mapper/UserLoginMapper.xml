@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.UserLoginMapper">
+
+    <!-- 根据用户账号和类型查询用户信息 -->
+    <select id="selectByAccountAndType" resultType="com.example.demo.entity.UserLogin">
+        SELECT id, user_account, user_password, salt_value, user_type, create_time, update_time, status 
+        FROM user_login 
+        WHERE user_account = #{userAccount} AND user_type = #{userType}
+    </select>
+    
+    <!-- 根据用户账号查询用户信息 -->
+    <select id="selectByAccount" resultType="com.example.demo.entity.UserLogin">
+        SELECT id, user_account, user_password, salt_value, user_type, create_time, update_time, status 
+        FROM user_login 
+        WHERE user_account = #{userAccount}
+    </select>
+    
+    <!-- 更新用户状态 -->
+    <update id="updateStatusByAccount">
+        UPDATE user_login 
+        SET status = #{status} 
+        WHERE user_account = #{userAccount}
+    </update>
+    
+    <!-- 根据用户ID查询用户账号 -->
+    <select id="selectAccountById" resultType="java.lang.String">
+        SELECT user_account 
+        FROM user_login 
+        WHERE id = #{userId}
+    </select>
+
+</mapper>

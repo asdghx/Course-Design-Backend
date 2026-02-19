@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.PositionMapper">
+
+    <!-- 分页查询岗位信息 -->
+    <select id="selectPositionPage" resultType="com.example.demo.entity.Position">
+        SELECT * FROM job_info
+        <where>
+            <if test="employerAccount != null and employerAccount != ''">
+                employer_account = #{employerAccount}
+            </if>
+            AND status = 1
+        </where>
+        ORDER BY create_time DESC
+    </select>
+    
+    <!-- 获取随机岗位列表 -->
+    <select id="selectRandomPositions" resultType="com.example.demo.entity.Position">
+        SELECT * FROM job_info 
+        WHERE status = 1 
+        ORDER BY RAND() 
+        LIMIT 10
+    </select>
+    
+    <!-- 根据企业账号统计有效岗位数量 -->
+    <select id="countActivePositions" resultType="int">
+        SELECT COUNT(*) 
+        FROM job_info 
+        WHERE employer_account = #{employerAccount} 
+        AND status = 1
+    </select>
+    
+    <!-- 软删除岗位 -->
+    <update id="softDeleteById">
+        UPDATE job_info SET status = 0 WHERE id = #{positionId}
+    </update>
+    
+    <!-- 插入岗位信息 -->
+    <insert id="insertPosition" parameterType="com.example.demo.entity.Position">
+        INSERT INTO job_info (
+            employer_account, 
+            employment_type, 
+            salary_range, 
+            job_description, 
+            work_location, 
+            experience_requirement, 
+            education_requirement, 
+            status
+        ) VALUES (
+            #{employerAccount}, 
+            #{employmentType}, 
+            #{salaryRange}, 
+            #{jobDescription}, 
+            #{workLocation}, 
+            #{experienceRequirement}, 
+            #{educationRequirement}, 
+            #{status}
+        )
+    </insert>
+    
+    <!-- 更新岗位信息 -->
+    <update id="updatePosition" parameterType="com.example.demo.entity.Position">
+        UPDATE job_info SET 
+            employer_account = #{employerAccount},
+            employment_type = #{employmentType},
+            salary_range = #{salaryRange},
+            job_description = #{jobDescription},
+            work_location = #{workLocation},
+            experience_requirement = #{experienceRequirement},
+            education_requirement = #{educationRequirement},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+</mapper>
