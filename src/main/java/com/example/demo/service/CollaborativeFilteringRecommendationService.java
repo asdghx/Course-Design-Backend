@@ -57,13 +57,14 @@ public class CollaborativeFilteringRecommendationService {
             allJobs.addAll(jobs);
         }
         
-        // 构建用户-岗位评分矩阵（浏览记为1分）
+        // 构建用户-岗位评分矩阵（使用浏览次数作为权重）
         Map<String, Map<Integer, Integer>> userJobMatrix = new HashMap<>();
-        for (Map.Entry<String, Set<Integer>> entry : userBrowseJobMap.entrySet()) {
-            String user = entry.getKey();
-            for (Integer job : entry.getValue()) {
-                userJobMatrix.computeIfAbsent(user, k -> new HashMap<>()).put(job, 1);
-            }
+        List<UserPositionHistory> allHistories = userPositionHistoryMapper.getAllUserPositionHistories();
+        for (UserPositionHistory history : allHistories) {
+            String user = history.getUserAccount();
+            Integer jobId = history.getPositionId();
+            Integer score = history.getBrowseCount() != null ? history.getBrowseCount() : 1;
+            userJobMatrix.computeIfAbsent(user, k -> new HashMap<>()).put(jobId, score);
         }
         
         // 计算岗位间的余弦相似度

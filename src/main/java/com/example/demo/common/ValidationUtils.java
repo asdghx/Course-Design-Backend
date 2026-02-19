@@ -25,13 +25,6 @@ public class ValidationUtils {
     }
     
     /**
-     * 校验整数是否在指定范围内
-     */
-    public static boolean isInRange(Integer value, int min, int max) {
-        return value != null && value >= min && value <= max;
-    }
-    
-    /**
      * 校验用户类型是否有效（1-个人用户，2-企业用户）
      */
     public static boolean isValidUserType(Integer userType) {

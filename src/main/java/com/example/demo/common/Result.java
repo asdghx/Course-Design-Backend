@@ -2,17 +2,12 @@ package com.example.demo.common;
 
 import lombok.Data;
 
-/**
- * 统一API响应结果封装类
- * 简化版本，保留最核心的功能
- */
 @Data
 public class Result<T> {
-    private int code; // 状态码
-    private String msg; // 响应消息
-    private T data; // 响应数据
+    private int code;
+    private String msg;
+    private T data;
 
-    // 核心构造方法
     public static <T> Result<T> result(int code, String msg, T data) {
         Result<T> r = new Result<>();
         r.setCode(code);
@@ -21,7 +16,6 @@ public class Result<T> {
         return r;
     }
 
-    // 最常用的便捷方法
     public static <T> Result<T> ok(T data) {
         return result(200, "success", data);
     }
@@ -34,7 +28,6 @@ public class Result<T> {
         return result(500, msg, null);
     }
 
-    // 常用HTTP状态码方法
     public static <T> Result<T> badRequest(String msg) {
         return result(400, msg, null);
     }
