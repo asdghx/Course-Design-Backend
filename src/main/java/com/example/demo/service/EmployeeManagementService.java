@@ -22,7 +22,6 @@ public class EmployeeManagementService {
      */
     @Cacheable(value = "employee", key = "#userAccount")
     public Employee getEmployeeInfo(String userAccount){
-        System.out.println("EmployeeService查询员工: " + userAccount);
         Employee employee = employeeMapper.selectEmployee(userAccount);
         return employee;
     }
@@ -42,9 +41,21 @@ public class EmployeeManagementService {
         if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
             return "手机号不能为空";
         }
+        
         // 验证手机号格式
         if (!phoneNumber.matches("^[1][3-9][0-9]{9}$")) {
             return "手机号格式不正确";
+        }
+        
+        // 验证其他字段不能包含数字
+        if (universityName != null && universityName.matches(".*\\d+.*")) {
+            return "毕业院校不能包含数字";
+        }
+        if (jobIntention != null && jobIntention.matches(".*\\d+.*")) {
+            return "求职意向不能包含数字";
+        }
+        if (resume != null && resume.matches(".*\\d+.*")) {
+            return "个人简介不能包含数字";
         }
         
         // 检查手机号是否被其他用户使用
