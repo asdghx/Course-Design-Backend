@@ -7,6 +7,7 @@ import com.example.demo.service.ResumeDeliveryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo.entity.vo.UserDeliveryVO;
 import java.util.List;
 
 /**
@@ -26,7 +27,7 @@ public class ResumeDeliveryController {
     @PostMapping("/createApplication")
     public Result<String> createApplication(
             @RequestParam("userAccount") String userAccount,
-            @RequestParam("positionId") Long positionId) {
+            @RequestParam("positionId") Integer positionId) {
         
         String result = resumeDeliveryService.addResumeDelivery(userAccount, positionId);
         if (result.equals("简历投递成功")) {
@@ -37,19 +38,19 @@ public class ResumeDeliveryController {
     }
 
     /**
-     * 根据用户账号查询投递的岗位详情
-     * 实现：先查询岗位ID，再查询岗位详细信息
+     * 根据用户账号查询投递记录详情（包含岗位信息和投递状态）
+     * 为了向前兼容，此接口返回增强的数据结构
      */
     @GetMapping("/getPositionsByUserAccount")
-    public Result<List<Position>> getPositionsByUserAccount(
+    public Result<List<UserDeliveryVO>> getPositionsByUserAccount(
             @RequestParam("userAccount") String userAccount) {
         
         if (userAccount == null || userAccount.trim().isEmpty()) {
             return Result.badRequest("用户账号不能为空");
         }
         
-        List<Position> positions = resumeDeliveryService.getPositionsByUserAccount(userAccount);
-        return Result.ok(positions);
+        List<UserDeliveryVO> deliveries = resumeDeliveryService.getDeliveriesWithPositionInfo(userAccount);
+        return Result.ok(deliveries);
     }
 
     /**
@@ -58,7 +59,7 @@ public class ResumeDeliveryController {
      */
     @GetMapping("/getEmployeesByPositionId")
     public Result<List<Employee>> getEmployeesByPositionId(
-            @RequestParam("positionId") Long positionId) {
+            @RequestParam("positionId") Integer positionId) {
         
         if (positionId == null) {
             return Result.badRequest("岗位ID不能为空");
@@ -66,5 +67,53 @@ public class ResumeDeliveryController {
         
         List<Employee> employees = resumeDeliveryService.getEmployeesByPositionId(positionId);
         return Result.ok(employees);
+    }
+
+    /**
+     * 修改投递状态为已拒绝(0)
+     */
+    @PutMapping("/updateStatusToRejected")
+    public Result<String> updateStatusToRejected(
+            @RequestParam("userAccount") String userAccount,
+            @RequestParam("positionId") Integer positionId) {
+        
+        String result = resumeDeliveryService.updateStatusToRejected(userAccount, positionId);
+        if (result.startsWith("状态更新成功")) {
+            return Result.ok(result);
+        } else {
+            return Result.fail(result);
+        }
+    }
+
+    /**
+     * 修改投递状态为邀约面试(2)
+     */
+    @PutMapping("/updateStatusToInterview")
+    public Result<String> updateStatusToInterview(
+            @RequestParam("userAccount") String userAccount,
+            @RequestParam("positionId") Integer positionId) {
+        
+        String result = resumeDeliveryService.updateStatusToInterview(userAccount, positionId);
+        if (result.startsWith("状态更新成功")) {
+            return Result.ok(result);
+        } else {
+            return Result.fail(result);
+        }
+    }
+
+    /**
+     * 修改投递状态为面试通过(3)
+     */
+    @PutMapping("/updateStatusToPassed")
+    public Result<String> updateStatusToPassed(
+            @RequestParam("userAccount") String userAccount,
+            @RequestParam("positionId") Integer positionId) {
+        
+        String result = resumeDeliveryService.updateStatusToPassed(userAccount, positionId);
+        if (result.startsWith("状态更新成功")) {
+            return Result.ok(result);
+        } else {
+            return Result.fail(result);
+        }
     }
 }

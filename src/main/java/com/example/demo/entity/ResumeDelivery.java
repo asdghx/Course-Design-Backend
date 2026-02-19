@@ -13,7 +13,8 @@ import java.util.Date;
 @TableName("resume_delivery")
 public class ResumeDelivery {
     private String userAccount;
-    private Long positionId;  // int unsigned 映射为 Long 类型
+    @TableId(type = IdType.NONE)
+    private Integer positionId;  // int unsigned 映射为 Integer 类型
     
     private Integer deliveryStatus = 1;  // 投递状态，默认已投递
     private Date statusUpdateTime;       // 状态更新时间
