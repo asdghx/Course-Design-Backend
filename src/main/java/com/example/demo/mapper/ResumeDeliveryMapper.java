@@ -29,6 +29,13 @@ public interface ResumeDeliveryMapper extends BaseMapper<ResumeDelivery> {
     List<String> selectUserAccountsByPositionId(@Param("positionId") Integer positionId);
 
     /**
+     * 根据岗位ID查询未被拒绝的投递用户账号列表
+     * 过滤掉状态为0（已拒绝）的记录
+     */
+    @Select("SELECT user_account FROM resume_delivery WHERE position_id = #{positionId} AND delivery_status != 0")
+    List<String> selectNonRejectedUserAccountsByPositionId(@Param("positionId") Integer positionId);
+
+    /**
      * 检查是否存在指定的简历投递记录
      */
     @Select("SELECT COUNT(*) FROM resume_delivery WHERE user_account = #{userAccount} AND position_id = #{positionId}")
@@ -69,12 +76,12 @@ public interface ResumeDeliveryMapper extends BaseMapper<ResumeDelivery> {
             "p.employer_account as employerAccount, " +
             "p.job_description as jobDescription, " +
             "p.salary_range as salaryRange, " +
-            "p.employment_type as employmentType, " +
             "p.work_location as workLocation, " +
             "p.experience_requirement as experienceRequirement, " +
             "p.education_requirement as educationRequirement, " +
-            "p.create_time as positionCreateTime, " +
+            "p.update_time as positionCreateTime, " +
             "p.status as positionStatus, " +
+            "p.is_campus_job as isCampusJob, " +
             "rd.user_account as userAccount, " +
             "rd.delivery_status as deliveryStatus, " +
             "rd.create_time as deliveryCreateTime, " +

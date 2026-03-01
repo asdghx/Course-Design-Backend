@@ -22,25 +22,4 @@ public interface UserLoginMapper extends BaseMapper<UserLogin> {
      */
     UserLogin selectByAccountAndType(@Param("userAccount") String userAccount, @Param("userType") Integer userType);
 
-    /**
-     * 根据用户账号查询用户信息
-     * @param userAccount 用户账号
-     * @return 用户登录信息
-     */
-    UserLogin selectByAccount(@Param("userAccount") String userAccount);
-
-    /**
-     * 更新用户状态
-     * @param userAccount 用户账号
-     * @param status 状态值
-     * @return 影响行数
-     */
-    int updateStatusByAccount(@Param("userAccount") String userAccount, @Param("status") Integer status);
-
-    /**
-     * 根据用户ID查询用户账号
-     * @param userId 用户ID
-     * @return 用户账号
-     */
-    String selectAccountById(@Param("userId") Long userId);
 }

@@ -38,6 +38,10 @@ public class EmployeeManagementService {
         if (employeeName == null || employeeName.trim().isEmpty()) {
             return "员工姓名不能为空";
         }
+        // 验证姓名不能包含数字
+        if (employeeName.matches(".*\\d+.*")) {
+            return "姓名不能包含数字";
+        }
         if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
             return "手机号不能为空";
         }
@@ -50,12 +54,6 @@ public class EmployeeManagementService {
         // 验证其他字段不能包含数字
         if (universityName != null && universityName.matches(".*\\d+.*")) {
             return "毕业院校不能包含数字";
-        }
-        if (jobIntention != null && jobIntention.matches(".*\\d+.*")) {
-            return "求职意向不能包含数字";
-        }
-        if (resume != null && resume.matches(".*\\d+.*")) {
-            return "个人简介不能包含数字";
         }
         
         // 检查手机号是否被其他用户使用

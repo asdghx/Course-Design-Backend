@@ -16,12 +16,12 @@ public class UserDeliveryVO {
     private String employerAccount;
     private String jobDescription;
     private String salaryRange;
-    private String employmentType;
     private String workLocation;
     private String experienceRequirement;
     private String educationRequirement;
     private Date positionCreateTime;
     private Integer positionStatus;
+    private Integer isCampusJob; // 是否校内岗位：1=是，0=否
     
     // 来自ResumeDelivery表的字段
     private String userAccount;

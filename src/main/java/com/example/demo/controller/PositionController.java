@@ -92,14 +92,14 @@ public class PositionController {
     @PostMapping("/createPosition")
     public Result<String> createPosition(
             @RequestParam("employerAccount") String employerAccount,
-            @RequestParam("employmentType") String employmentType,
             @RequestParam("salaryRange") String salaryRange,
             @RequestParam("jobDescription") String jobDescription,
             @RequestParam(value = "workLocation", required = false, defaultValue = "") String workLocation,
             @RequestParam(value = "experienceRequirement", required = false, defaultValue = "") String experienceRequirement,
-            @RequestParam(value = "educationRequirement", required = false, defaultValue = "") String educationRequirement
+            @RequestParam(value = "educationRequirement", required = false, defaultValue = "") String educationRequirement,
+            @RequestParam(value = "universityName", required = false) String universityName
     ){
-        String msg = positionManagementService.createPosition(employerAccount, employmentType, salaryRange, jobDescription, workLocation, experienceRequirement, educationRequirement);
+        String msg = positionManagementService.createPosition(employerAccount, salaryRange, jobDescription, workLocation, experienceRequirement, educationRequirement, universityName);
         return msg.equals("添加岗位成功") ? Result.ok(msg) : Result.fail(msg);
 
     }
@@ -111,14 +111,14 @@ public class PositionController {
     public Result<String> updatePosition(
             @RequestParam("positionId") Integer positionId,
             @RequestParam("employerAccount") String employerAccount,
-            @RequestParam("employmentType") String employmentType,
             @RequestParam("salaryRange") String salaryRange,
             @RequestParam("jobDescription") String jobDescription,
             @RequestParam(value = "workLocation", required = false, defaultValue = "") String workLocation,
             @RequestParam(value = "experienceRequirement", required = false, defaultValue = "") String experienceRequirement,
-            @RequestParam(value = "educationRequirement", required = false, defaultValue = "") String educationRequirement
+            @RequestParam(value = "educationRequirement", required = false, defaultValue = "") String educationRequirement,
+            @RequestParam(value = "universityName", required = false) String universityName
     ){
-        String msg = positionManagementService.updatePositionById(positionId, employerAccount, employmentType, salaryRange, jobDescription, workLocation, experienceRequirement, educationRequirement);
+        String msg = positionManagementService.updatePositionById(positionId, employerAccount, salaryRange, jobDescription, workLocation, experienceRequirement, educationRequirement, universityName);
         return msg.equals("更新岗位成功") ? Result.ok(msg) : Result.fail(msg);
 
     }

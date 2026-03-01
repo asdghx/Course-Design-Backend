@@ -51,7 +51,7 @@ public class PositionManagementService {
      * 创建新岗位
      */
     @CacheEvict(value = "positions", allEntries = true)
-    public String createPosition(String employerAccount, String employmentType, String salaryRange, String jobDescription, String workLocation, String experienceRequirement, String educationRequirement) {
+    public String createPosition(String employerAccount, String salaryRange, String jobDescription, String workLocation, String experienceRequirement, String educationRequirement, String universityName) {
         // 参数验证
         if (employerAccount == null || employerAccount.trim().isEmpty()) {
             return "雇主账号不能为空";
@@ -60,7 +60,7 @@ public class PositionManagementService {
             return "岗位描述不能为空";
         }
         
-        Position position = createPositionObject(employerAccount, employmentType, salaryRange, jobDescription, workLocation, experienceRequirement, educationRequirement);
+        Position position = createPositionObject(employerAccount, salaryRange, jobDescription, workLocation, experienceRequirement, educationRequirement, universityName);
         position.setStatus(1); // 默认有效状态
         int rows = positionMapper.insertPosition(position);
         return rows > 0 ? "添加岗位成功" : "添加岗位失败";
@@ -70,13 +70,13 @@ public class PositionManagementService {
      * 更新岗位信息
      */
     @CacheEvict(value = "positions", allEntries = true)
-    public String updatePositionById(Integer id, String employerAccount, String employmentType, String salaryRange, String jobDescription, String workLocation, String experienceRequirement, String educationRequirement) {
+    public String updatePositionById(Integer id, String employerAccount, String salaryRange, String jobDescription, String workLocation, String experienceRequirement, String educationRequirement, String universityName) {
         // 参数验证
         if (jobDescription == null || jobDescription.trim().isEmpty()) {
             return "岗位描述不能为空";
         }
         
-        Position position = createPositionObject(employerAccount, employmentType, salaryRange, jobDescription, workLocation, experienceRequirement, educationRequirement);
+        Position position = createPositionObject(employerAccount, salaryRange, jobDescription, workLocation, experienceRequirement, educationRequirement, universityName);
         position.setId(id);  // 设置ID用于更新条件
         position.setStatus(1); // 保持有效状态
         int rows = positionMapper.updatePosition(position);
@@ -100,15 +100,15 @@ public class PositionManagementService {
     /**
      * 创建岗位对象的私有辅助方法
      */
-    private Position createPositionObject(String employerAccount, String employmentType, String salaryRange, String jobDescription, String workLocation, String experienceRequirement, String educationRequirement) {
+    private Position createPositionObject(String employerAccount, String salaryRange, String jobDescription, String workLocation, String experienceRequirement, String educationRequirement, String universityName) {
         Position position = new Position();
         position.setEmployerAccount(employerAccount);
-        position.setEmploymentType(employmentType);
         position.setSalaryRange(salaryRange);
         position.setJobDescription(jobDescription);
         position.setWorkLocation(workLocation);
         position.setExperienceRequirement(experienceRequirement);
         position.setEducationRequirement(educationRequirement);
+        position.setUniversityName(universityName); // 大学名称，为空表示校外岗位
         return position;
     }
 }

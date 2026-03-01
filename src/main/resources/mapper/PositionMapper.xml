@@ -11,7 +11,7 @@
             </if>
             AND status = 1
         </where>
-        ORDER BY create_time DESC
+        ORDER BY update_time DESC
     </select>
     
     <!-- 获取随机岗位列表 -->
@@ -39,22 +39,22 @@
     <insert id="insertPosition" parameterType="com.example.demo.entity.Position">
         INSERT INTO job_info (
             employer_account, 
-            employment_type, 
             salary_range, 
             job_description, 
             work_location, 
             experience_requirement, 
             education_requirement, 
-            status
+            status,
+            university_name
         ) VALUES (
             #{employerAccount}, 
-            #{employmentType}, 
             #{salaryRange}, 
             #{jobDescription}, 
             #{workLocation}, 
             #{experienceRequirement}, 
             #{educationRequirement}, 
-            #{status}
+            #{status},
+            #{universityName}
         )
     </insert>
     
@@ -62,13 +62,13 @@
     <update id="updatePosition" parameterType="com.example.demo.entity.Position">
         UPDATE job_info SET 
             employer_account = #{employerAccount},
-            employment_type = #{employmentType},
             salary_range = #{salaryRange},
             job_description = #{jobDescription},
             work_location = #{workLocation},
             experience_requirement = #{experienceRequirement},
             education_requirement = #{educationRequirement},
-            status = #{status}
+            status = #{status},
+            university_name = #{universityName}
         WHERE id = #{id}
     </update>
 

@@ -89,15 +89,15 @@ public class ResumeDeliveryService {
 
     /**
      * 根据岗位ID查询投递用户的简历详情列表
-     * 实现：直接通过岗位ID查询用户账号，再获取简历详细信息
+     * 实现：直接通过岗位ID查询未被拒绝的投递记录，再获取简历详细信息
      */
     public List<Employee> getEmployeesByPositionId(Integer positionId) {
         if (positionId == null) {
             return null;
         }
         
-        // 第一步：根据岗位ID查询投递的用户账号列表
-        List<String> userAccounts = resumeDeliveryMapper.selectUserAccountsByPositionId(positionId);
+        // 第一步：根据岗位ID查询未被拒绝的投递用户账号列表
+        List<String> userAccounts = resumeDeliveryMapper.selectNonRejectedUserAccountsByPositionId(positionId);
         if (userAccounts == null || userAccounts.isEmpty()) {
             return new java.util.ArrayList<>();
         }
@@ -106,7 +106,6 @@ public class ResumeDeliveryService {
         List<Employee> employees = new java.util.ArrayList<>();
         for (String userAccount : userAccounts) {
             Employee employee = employeeMapper.selectEmployee(userAccount);
-            System.out.println(employee.getEmployeeName());
             if (employee != null) {
                 employees.add(employee);
             }

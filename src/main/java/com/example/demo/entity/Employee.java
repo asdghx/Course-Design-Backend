@@ -14,16 +14,13 @@ import java.util.Date;
 @TableName("job_seeker_info")
 public class Employee {
     @TableId(type = IdType.NONE)
-    private String userAccount;  // 主键，关联user_login表
+    private String userAccount;
     private String employeeName;
-    private String phoneNumber; // 手机号改为String类型以保持格式
-    
+    private String phoneNumber;
     private String universityName;
     private String jobIntention;
     private String resume;
-    
-    // 移除createTime字段，只保留updateTime
-    
+
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 }

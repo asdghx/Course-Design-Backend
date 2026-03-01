@@ -6,6 +6,21 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher # 解决Swagger与Spring Boot 2.7兼容性问题
+  
+  # Redis配置（暂时注释，待Redis服务启动后再启用）
+  # redis:
+  #   host: localhost # Redis服务器地址
+  #   port: 6379 # Redis端口
+  #   # password: # Redis密码（如果设置了的话）
+  #   timeout: 2000ms # 连接超时时间
+  #   database: 0 # 使用的数据库索引
+  #   jedis:
+  #     pool:
+  #       max-active: 8 # 连接池最大连接数
+  #       max-idle: 8 # 连接池最大空闲连接数
+  #       min-idle: 0 # 连接池最小空闲连接数
+  #       max-wait: -1ms # 获取连接时的最大等待时间
+    
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver # MySQL驱动类
     url: jdbc:mysql://localhost:3306/xg_ptj?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true # 数据库连接URL
@@ -35,3 +50,4 @@ logging:
     com.example.demo: debug # 应用日志级别
     org.springframework: info # Spring框架日志级别
     com.baomidou.mybatisplus: debug # MyBatis-Plus日志级别
+    org.springframework.data.redis: info # Redis相关日志

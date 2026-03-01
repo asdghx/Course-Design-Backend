@@ -97,6 +97,9 @@
             <version>3.0.3</version>
         </dependency>
         
+        <!-- Redis相关依赖已移除 -->
+
+
 
     </dependencies>
 
