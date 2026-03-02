@@ -4,7 +4,10 @@
 
     <!-- 分页查询岗位信息 -->
     <select id="selectPositionPage" resultType="com.example.demo.entity.Position">
-        SELECT * FROM job_info
+        SELECT id, employer_account, job_description, salary_range, 
+               work_location, experience_requirement, education_requirement, 
+               update_time, status, university_name 
+        FROM job_info
         <where>
             <if test="employerAccount != null and employerAccount != ''">
                 employer_account = #{employerAccount}
@@ -16,7 +19,10 @@
     
     <!-- 获取随机岗位列表 -->
     <select id="selectRandomPositions" resultType="com.example.demo.entity.Position">
-        SELECT * FROM job_info 
+        SELECT id, employer_account, job_description, salary_range, 
+               work_location, experience_requirement, education_requirement, 
+               update_time, status, university_name 
+        FROM job_info 
         WHERE status = 1 
         ORDER BY RAND() 
         LIMIT 10

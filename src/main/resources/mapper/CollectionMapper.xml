@@ -4,7 +4,7 @@
 
     <!-- 根据用户账号和文章ID查询收藏记录 -->
     <select id="selectByUserAndArticle" resultType="com.example.demo.entity.Collection">
-        SELECT * 
+        SELECT user_account, article_id, create_time 
         FROM article_collection 
         WHERE user_account = #{userAccount} 
         AND article_id = #{articleId}

@@ -10,7 +10,6 @@ import java.util.Date;
  * 对应数据库表 user_login
  */
 @Data
-@TableName("user_login")
 public class UserLogin {
     @TableId(type = IdType.AUTO)
     private Long id;

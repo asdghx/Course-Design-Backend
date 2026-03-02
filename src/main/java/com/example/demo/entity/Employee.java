@@ -7,11 +7,11 @@ import java.util.Date;
 
 /**
  * 员工实体类
- * 对应数据库表 job_seeker_info
+ * 对应数据库表 employee
  * userAccount 为主键，关联 user_login 表
  */
 @Data
-@TableName("job_seeker_info")
+@TableName("employee")
 public class Employee {
     @TableId(type = IdType.NONE)
     private String userAccount;

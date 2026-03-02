@@ -13,8 +13,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserLoginService {
 
-    @Autowired
-    private UserLoginMapper userLoginMapper;
+    private final UserLoginMapper userLoginMapper;
+    
+    public UserLoginService(UserLoginMapper userLoginMapper) {
+        this.userLoginMapper = userLoginMapper;
+    }
 
     /**
      * 用户登录逻辑
@@ -41,8 +44,7 @@ public class UserLoginService {
      */
     public String registerUser(String userAccount, String userPassword, Integer userType) {
         // 检查用户是否已存在
-        UserLogin existingUser = userLoginMapper.selectByAccountAndType(userAccount, userType);
-        if (existingUser != null) {
+        if (userLoginMapper.selectByAccountAndType(userAccount, userType) != null) {
             return "账号已存在";
         }
         

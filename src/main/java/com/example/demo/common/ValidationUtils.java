@@ -1,27 +1,39 @@
 package com.example.demo.common;
 
 /**
- * 参数校验工具类
- * 提供常用的参数校验方法，减少Controller层重复代码
+ * 通用参数验证工具类
+ * 提供各种业务参数的验证方法
  */
 public class ValidationUtils {
     
     /**
-     * 校验字符串是否为空或空白
+     * 验证字符串是否为空或空白
      */
     public static boolean isEmpty(String str) {
         return str == null || str.trim().isEmpty();
     }
     
     /**
-     * 校验字符串长度是否在指定范围内
+     * 验证姓名格式（不能包含数字）
      */
-    public static boolean isLengthValid(String str, int minLength, int maxLength) {
-        if (isEmpty(str)) {
-            return false;
-        }
-        int length = str.trim().length();
-        return length >= minLength && length <= maxLength;
+    public static boolean isValidName(String name) {
+        return !isEmpty(name) && !name.matches(".*\\d+.*");
+    }
+    
+    /**
+     * 验证手机号格式
+     */
+    public static boolean isValidPhone(String phone) {
+        return !isEmpty(phone) && phone.matches("^[1][3-9][0-9]{9}$");
+    }
+    
+    /**
+     * 验证字符串长度范围
+     */
+    public static boolean isLengthBetween(String str, int min, int max) {
+        if (str == null) return false;
+        int len = str.length();
+        return len >= min && len <= max;
     }
     
     /**
@@ -44,7 +56,7 @@ public class ValidationUtils {
         if (isEmpty(userAccount)) {
             return "账号不能为空";
         }
-        if (!isLengthValid(userAccount, 6, 20)) {
+        if (!isLengthBetween(userAccount, 6, 20)) {
             return "账号长度必须在6-20位之间";
         }
         
@@ -52,7 +64,7 @@ public class ValidationUtils {
         if (isEmpty(userPassword)) {
             return "密码不能为空";
         }
-        if (!isLengthValid(userPassword, 6, 20)) {
+        if (!isLengthBetween(userPassword, 6, 20)) {
             return "密码长度必须在6-20位之间";
         }
         
@@ -75,5 +87,4 @@ public class ValidationUtils {
         // 复用注册参数校验
         return validateRegisterParams(userAccount, userPassword, userType);
     }
-
 }
