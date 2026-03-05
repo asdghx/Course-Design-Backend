@@ -19,32 +19,30 @@ import java.util.List;
 public interface PositionMapper extends BaseMapper<Position> {
     
     /**
-     * 分页查询岗位信息
+     * 分页查询岗位信息（支持按学校名称过滤）
+     * @param page 分页对象
+     * @param employerAccount 企业账号（可选）
+     * @param universityName 学校名称（可选，为空表示校外岗位，有值表示对应学校的校内岗位）
+     * @return 岗位分页结果
+     */
+    IPage<Position> selectPositionPage(Page<Position> page, 
+                                       @Param("employerAccount") String employerAccount,
+                                       @Param("universityName") String universityName);
+    
+    /**
+     * HR 管理岗位分页查询（只按企业账号过滤，不限制学校和状态）
      * @param page 分页对象
      * @param employerAccount 企业账号（可选）
      * @return 岗位分页结果
      */
-    IPage<Position> selectPositionPage(Page<Position> page, @Param("employerAccount") String employerAccount);
+    IPage<Position> selectHrPositions(Page<Position> page, 
+                                      @Param("employerAccount") String employerAccount);
     
     /**
      * 获取随机岗位列表
      * @return 随机岗位列表
      */
     List<Position> selectRandomPositions();
-    
-    /**
-     * 根据企业账号统计有效岗位数量
-     * @param employerAccount 企业账号
-     * @return 有效岗位数量
-     */
-    int countActivePositions(@Param("employerAccount") String employerAccount);
-    
-    /**
-     * 软删除岗位
-     * @param positionId 岗位ID
-     * @return 影响行数
-     */
-    int softDeleteById(@Param("positionId") Integer positionId);
     
     /**
      * 插入岗位信息
@@ -59,4 +57,19 @@ public interface PositionMapper extends BaseMapper<Position> {
      * @return 影响行数
      */
     int updatePosition(Position position);
+    
+    /**
+     * 根据经纬度范围查询岗位 (粗略过滤)
+     * @param minLat 最小纬度
+     * @param maxLat 最大纬度
+     * @param minLon 最小经度
+     * @param maxLon 最大经度
+     * @return 岗位列表
+     */
+    List<Position> selectByLocationRange(
+        @Param("minLat") Double minLat,
+        @Param("maxLat") Double maxLat,
+        @Param("minLon") Double minLon,
+        @Param("maxLon") Double maxLon
+    );
 }

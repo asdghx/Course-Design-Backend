@@ -75,7 +75,8 @@ public interface ResumeDeliveryMapper extends BaseMapper<ResumeDelivery> {
             "p.id as positionId, " +
             "p.employer_account as employerAccount, " +
             "p.job_description as jobDescription, " +
-            "p.salary_range as salaryRange, " +
+            "p.salary_min as salaryMin, " +
+            "p.salary_max as salaryMax, " +
             "p.work_location as workLocation, " +
             "p.experience_requirement as experienceRequirement, " +
             "p.education_requirement as educationRequirement, " +

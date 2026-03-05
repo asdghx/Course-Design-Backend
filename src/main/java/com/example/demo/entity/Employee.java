@@ -11,7 +11,6 @@ import java.util.Date;
  * userAccount 为主键，关联 user_login 表
  */
 @Data
-@TableName("employee")
 public class Employee {
     @TableId(type = IdType.NONE)
     private String userAccount;

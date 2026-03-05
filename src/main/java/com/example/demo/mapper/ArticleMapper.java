@@ -10,17 +10,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ArticleMapper extends BaseMapper<Article> {
 
-    @Select("SELECT id, title, author_account, publish_date, content, view_count FROM article_info WHERE id = #{id}")
+    @Select("SELECT id, title, author_account, create_time, content, view_count FROM article WHERE id = #{id}")
     Article selectArticleContent(@Param("id") Integer id);
 
-    @Select("SELECT id, title, publish_date, author_account, view_count FROM article_info WHERE article_type = #{articleType} ORDER BY publish_date DESC")
+    @Select("SELECT id, article_type, title, create_time, author_account, view_count FROM article WHERE article_type = #{articleType} ORDER BY create_time DESC")
     IPage<Article> selectArticlePage(Page<Article> page, @Param("articleType") String articleType);
 
-    @Update("UPDATE article_info SET view_count = view_count + 1 WHERE id = #{id}")
+    @Update("UPDATE article SET view_count = view_count + 1 WHERE id = #{id}")
     int incrementViewCount(@Param("id") Integer id);
 
-    // 移除incrementLikeCount方法，因为表结构中没有like_count字段
-
-    @Select("SELECT COUNT(*) FROM article_info WHERE author_account = #{authorAccount}")
-    int countPublishedArticlesByAuthor(@Param("authorAccount") String authorAccount);
 }

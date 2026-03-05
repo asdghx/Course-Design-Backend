@@ -2,33 +2,33 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.mapper.CollectionMapper">
 
-    <!-- 根据用户账号和文章ID查询收藏记录 -->
+    <!-- 根据用户账号和文章 ID 查询收藏记录 -->
     <select id="selectByUserAndArticle" resultType="com.example.demo.entity.Collection">
         SELECT user_account, article_id, create_time 
-        FROM article_collection 
+        FROM collection 
         WHERE user_account = #{userAccount} 
         AND article_id = #{articleId}
     </select>
 
     <!-- 分页查询用户收藏的文章 -->
     <select id="selectCollectedArticles" resultType="com.example.demo.entity.Article">
-        SELECT a.id, a.author_account, a.article_type, a.title, a.publish_date, 
-               a.content, a.view_count, a.create_time
-        FROM article_info a
-        INNER JOIN article_collection ac ON a.id = ac.article_id
+        SELECT a.id, a.author_account, a.article_type, a.title, 
+               a.content, a.create_time
+        FROM article a
+        INNER JOIN collection ac ON a.id = ac.article_id
         WHERE ac.user_account = #{userAccount}
         ORDER BY ac.create_time DESC
     </select>
     
     <!-- 添加文章收藏 -->
     <insert id="insertCollection" parameterType="com.example.demo.entity.Collection">
-        INSERT INTO article_collection (user_account, article_id, create_time) 
+        INSERT INTO collection (user_account, article_id, create_time) 
         VALUES (#{userAccount}, #{articleId}, NOW())
     </insert>
     
     <!-- 删除文章收藏 -->
     <delete id="deleteCollection">
-        DELETE FROM article_collection 
+        DELETE FROM collection 
         WHERE article_id = #{articleId} AND user_account = #{userAccount}
     </delete>
 

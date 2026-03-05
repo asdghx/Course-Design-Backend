@@ -11,11 +11,12 @@ import java.util.Date;
  */
 @Data
 public class UserDeliveryVO {
-    // 来自Position表的字段
+    // 来自 Position 表的字段
     private Integer positionId;
     private String employerAccount;
     private String jobDescription;
-    private String salaryRange;
+    private Integer salaryMin;
+    private Integer salaryMax;
     private String workLocation;
     private String experienceRequirement;
     private String educationRequirement;
