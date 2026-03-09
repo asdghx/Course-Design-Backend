@@ -4,55 +4,61 @@
 
     <!-- 分页查询岗位信息（支持按学校名称过滤） -->
     <select id="selectPositionPage" resultType="com.example.demo.entity.Position">
-        SELECT id, employer_account, job_description, salary_min, salary_max,
-               work_location, university_name, latitude, longitude
-        FROM job_info
+        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max,
+               j.work_location, j.university_name, j.latitude, j.longitude,
+               e.company_name
+        FROM job j
+        LEFT JOIN employer e ON j.employer_account = e.employer_account
         <where>
             <if test="employerAccount != null and employerAccount != ''">
-                AND employer_account = #{employerAccount}
+                AND j.employer_account = #{employerAccount}
             </if>
-            AND status = 1
+            AND j.status = 1
             <!-- 根据 universityName 参数过滤：为空表示校外岗位，有值表示对应学校的校内岗位 -->
             <choose>
                 <when test="universityName != null and universityName != ''">
-                    AND university_name = #{universityName}
+                    AND j.university_name = #{universityName}
                 </when>
                 <otherwise>
                     <!-- 默认：校外岗位 -->
-                    AND (university_name IS NULL OR university_name = '')
+                    AND (j.university_name IS NULL OR j.university_name = '')
                 </otherwise>
             </choose>
         </where>
-        ORDER BY update_time DESC
+        ORDER BY j.update_time DESC
     </select>
     
     <!-- HR 管理岗位分页查询（只按企业账号过滤，不限制学校和状态） -->
     <select id="selectHrPositions" resultType="com.example.demo.entity.Position">
-        SELECT id, employer_account, job_description, salary_min, salary_max,
-               work_location, university_name, latitude, longitude
-        FROM job_info
+        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max,
+               j.work_location, j.university_name, j.latitude, j.longitude,
+               e.company_name
+        FROM job j
+        LEFT JOIN employer e ON j.employer_account = e.employer_account
         <where>
             <if test="employerAccount != null and employerAccount != ''">
-                AND employer_account = #{employerAccount}
+                AND j.employer_account = #{employerAccount}
             </if>
         </where>
-        ORDER BY update_time DESC
+        ORDER BY j.update_time DESC
     </select>
     
     <!-- 获取随机岗位列表（仅校外岗位） -->
     <select id="selectRandomPositions" resultType="com.example.demo.entity.Position">
-        SELECT id, employer_account, job_description, salary_min, salary_max,
-               work_location, university_name, latitude, longitude
-        FROM job_info 
-        WHERE status = 1 
-        AND (university_name IS NULL OR university_name = '')
+        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max,
+               j.work_location, j.university_name, j.latitude, j.longitude,
+               e.company_name
+        FROM job j
+        LEFT JOIN employer e ON j.employer_account = e.employer_account
+        WHERE j.status = 1 
+        AND (j.university_name IS NULL OR j.university_name = '')
         ORDER BY RAND() 
         LIMIT 10
     </select>
     
     <!-- 插入岗位信息 -->
     <insert id="insertPosition" parameterType="com.example.demo.entity.Position">
-        INSERT INTO job_info (
+        INSERT INTO job (
             employer_account, 
             salary_min,
             salary_max,
@@ -77,7 +83,7 @@
     
     <!-- 更新岗位信息 -->
     <update id="updatePosition" parameterType="com.example.demo.entity.Position">
-        UPDATE job_info SET 
+        UPDATE job SET 
             employer_account = #{employerAccount},
             salary_min = #{salaryMin},
             salary_max = #{salaryMax},
@@ -92,14 +98,16 @@
     
     <!-- 根据经纬度范围查询岗位 (粗略过滤) -->
     <select id="selectByLocationRange" resultType="com.example.demo.entity.Position">
-        SELECT id, employer_account, job_description, salary_min, salary_max,
-               work_location, university_name, latitude, longitude
-        FROM job_info
-        WHERE status = 1
-          AND latitude IS NOT NULL
-          AND longitude IS NOT NULL
-          AND latitude BETWEEN #{minLat} AND #{maxLat}
-          AND longitude BETWEEN #{minLon} AND #{maxLon}
+        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max,
+               j.work_location, j.university_name, j.latitude, j.longitude,
+               e.company_name
+        FROM job j
+        LEFT JOIN employer e ON j.employer_account = e.employer_account
+        WHERE j.status = 1
+          AND j.latitude IS NOT NULL
+          AND j.longitude IS NOT NULL
+          AND j.latitude BETWEEN #{minLat} AND #{maxLat}
+          AND j.longitude BETWEEN #{minLon} AND #{maxLon}
     </select>
 
 </mapper>

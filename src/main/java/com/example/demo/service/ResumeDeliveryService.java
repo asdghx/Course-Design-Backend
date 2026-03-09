@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.vo.UserDeliveryVO;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,17 +22,21 @@ import java.util.List;
 @Service
 public class ResumeDeliveryService {
 
-    @Autowired
-    private ResumeDeliveryMapper resumeDeliveryMapper;
+    private final ResumeDeliveryMapper resumeDeliveryMapper;
+    private final PositionMapper positionMapper;
+    private final EmployeeMapper employeeMapper;
+    private final UserLoginMapper userLoginMapper;
     
-    @Autowired
-    private PositionMapper positionMapper;
-    
-    @Autowired
-    private EmployeeMapper employeeMapper;
-    
-    @Autowired
-    private UserLoginMapper userLoginMapper;
+    public ResumeDeliveryService(
+            ResumeDeliveryMapper resumeDeliveryMapper,
+            PositionMapper positionMapper,
+            EmployeeMapper employeeMapper,
+            UserLoginMapper userLoginMapper) {
+        this.resumeDeliveryMapper = resumeDeliveryMapper;
+        this.positionMapper = positionMapper;
+        this.employeeMapper = employeeMapper;
+        this.userLoginMapper = userLoginMapper;
+    }
 
     /**
      * 添加简历投递记录
@@ -62,56 +67,40 @@ public class ResumeDeliveryService {
 
     /**
      * 根据用户账号查询投递的岗位详情列表
-     * 实现：先通过用户账号查询岗位ID，再通过岗位ID获取岗位详细信息
+     * 优化：使用批量查询避免 N+1 问题
      */
     public List<Position> getPositionsByUserAccount(String userAccount) {
         if (userAccount == null || userAccount.trim().isEmpty()) {
             return null;
         }
-        
-        // 第一步：根据用户账号查询投递的岗位ID列表
+            
+        // 第一步：根据用户账号查询投递的岗位 ID 列表
         List<Integer> positionIds = resumeDeliveryMapper.selectPositionIdsByUserAccount(userAccount);
         if (positionIds == null || positionIds.isEmpty()) {
-            return new java.util.ArrayList<>();
+            return new ArrayList<>();
         }
-        
-        // 第二步：根据岗位ID查询岗位详细信息
-        List<Position> positions = new java.util.ArrayList<>();
-        for (Integer positionId : positionIds) {
-            Position position = positionMapper.selectById(positionId);
-            if (position != null) {
-                positions.add(position);
-            }
-        }
-        
-        return positions;
+            
+        // 第二步：批量查询岗位信息（一次查询，避免 N+1 问题）
+        return positionMapper.selectBatchIds(positionIds);
     }
 
     /**
-     * 根据岗位ID查询投递用户的简历详情列表
-     * 实现：直接通过岗位ID查询未被拒绝的投递记录，再获取简历详细信息
+     * 根据岗位 ID 查询投递用户的简历详情列表
+     * 优化：使用批量查询避免 N+1 问题
      */
     public List<Employee> getEmployeesByPositionId(Integer positionId) {
         if (positionId == null) {
             return null;
         }
-        
-        // 第一步：根据岗位ID查询未被拒绝的投递用户账号列表
+            
+        // 第一步：根据岗位 ID 查询未被拒绝的投递用户账号列表
         List<String> userAccounts = resumeDeliveryMapper.selectNonRejectedUserAccountsByPositionId(positionId);
         if (userAccounts == null || userAccounts.isEmpty()) {
-            return new java.util.ArrayList<>();
+            return new ArrayList<>();
         }
-        
-        // 第二步：根据用户账号查询简历详情
-        List<Employee> employees = new java.util.ArrayList<>();
-        for (String userAccount : userAccounts) {
-            Employee employee = employeeMapper.selectEmployee(userAccount);
-            if (employee != null) {
-                employees.add(employee);
-            }
-        }
-        
-        return employees;
+            
+        // 第二步：批量查询员工信息（一次查询，避免 N+1 问题）
+        return employeeMapper.selectBatchByUserAccounts(userAccounts);
     }
 
     /**

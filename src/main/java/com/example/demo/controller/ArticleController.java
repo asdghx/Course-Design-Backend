@@ -32,13 +32,24 @@ public class ArticleController {
     }
 
     /**
-     * 获取文章详情
+     * 获取文章完整信息（包含内容和基本信息）
      */
-    @GetMapping("/getArticleContent")
-    public Result<Article> getArticleContent(
+    @GetMapping("/getArticleBase")
+    public Result<Article> getArticleBase(
             @RequestParam("id") String id
     ){
-        Article article = articleService.getArticleContent(id);
+        Article article = articleService.getArticleBase(id);
         return Result.ok(article);
+    }
+
+    /**
+     * 获取文章内容（纯文本）
+     */
+    @GetMapping("/getArticleContent")
+    public Result<String> getArticleContent(
+            @RequestParam("id") String id
+    ){
+        String content = articleService.getArticleContentOnly(id);
+        return Result.ok(content);
     }
 }

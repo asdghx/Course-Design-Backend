@@ -10,8 +10,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ArticleMapper extends BaseMapper<Article> {
 
-    @Select("SELECT id, title, author_account, create_time, content, view_count FROM article WHERE id = #{id}")
-    Article selectArticleContent(@Param("id") Integer id);
+    @Select("SELECT id, article_type, title, content, author_account, create_time, view_count FROM article WHERE id = #{id}")
+    Article selectArticleBase(@Param("id") Integer id);
+
+    /**
+     * 单独查询文章内容（大字段）
+     * @param id 文章 ID
+     * @return 文章内容
+     */
+    @Select("SELECT content FROM article WHERE id = #{id}")
+    String selectArticleContent(@Param("id") Integer id);
 
     @Select("SELECT id, article_type, title, create_time, author_account, view_count FROM article WHERE article_type = #{articleType} ORDER BY create_time DESC")
     IPage<Article> selectArticlePage(Page<Article> page, @Param("articleType") String articleType);

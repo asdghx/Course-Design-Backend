@@ -11,7 +11,6 @@ import java.util.Date;
  * 使用 (user_account, article_id) 作为复合主键
  */
 @Data
-@TableName("collection")
 public class Collection {
     private String userAccount;  // 用户账号 (复合主键的一部分)
     

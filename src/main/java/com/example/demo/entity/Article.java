@@ -10,7 +10,6 @@ import java.util.Date;
  * 对应数据库表 article
  */
 @Data
-@TableName("article")
 public class Article {
     @TableId(type = IdType.AUTO)
     private Integer id;

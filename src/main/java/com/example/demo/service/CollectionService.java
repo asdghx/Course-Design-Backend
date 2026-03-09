@@ -6,8 +6,6 @@ import com.example.demo.entity.Article;
 import com.example.demo.entity.Collection;
 import com.example.demo.mapper.CollectionMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,21 +14,22 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CollectionService {
-    @Autowired
-    CollectionMapper collectionMapper;
-
-    /**
-     * 根据用户账号和文章ID查询收藏状态
-     */
-    @Cacheable(value = "collection", key = "#userAccount + '_' + #articleId")
-    public Collection getCollectionByUserAccountAndArticleId(String userAccount, Integer articleId){
-        return collectionMapper.selectByUserAndArticle(userAccount, articleId);
+    private final CollectionMapper collectionMapper;
+    
+    public CollectionService(CollectionMapper collectionMapper) {
+        this.collectionMapper = collectionMapper;
     }
 
     /**
+     * 根据用户账号和文章 ID 查询收藏状态
+     */
+    public Collection getCollectionByUserAccountAndArticleId(String userAccount, Integer articleId){
+        return collectionMapper.selectByUserAndArticle(userAccount, articleId);
+    }
+    
+    /**
      * 分页查询用户收藏的文章列表
      */
-    @Cacheable(value = "collections", key = "#userAccount + '_' + #currentPage + '_' + #pageSize")
     public IPage<Article> getCollectedArticlesByUserAccountWithPagination(String userAccount, Integer currentPage, Integer pageSize){
         Page<Article> page = new Page<>(currentPage, pageSize);
         return collectionMapper.selectCollectedArticles(page, userAccount);
@@ -39,7 +38,6 @@ public class CollectionService {
     /**
      * 创建收藏
      */
-    @CacheEvict(value = {"collection", "collections"}, allEntries = true)
     public String createCollection(Integer articleId, String userAccount){
         // 参数验证
         if (userAccount == null || userAccount.trim().isEmpty()) {
@@ -65,8 +63,15 @@ public class CollectionService {
     /**
      * 删除收藏
      */
-    @CacheEvict(value = {"collection", "collections"}, allEntries = true)
     public String deleteCollection(Integer articleId, String userAccount){
+        // 参数验证
+        if (userAccount == null || userAccount.trim().isEmpty()) {
+            return "用户账号不能为空";
+        }
+        if (articleId == null) {
+            return "文章 ID 不能为空";
+        }
+        
         int rows = collectionMapper.deleteCollection(articleId, userAccount);
         return rows > 0 ? "取消收藏成功" : "取消收藏失败";
     }

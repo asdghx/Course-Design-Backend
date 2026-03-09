@@ -5,8 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.demo.entity.Article;
 import com.example.demo.mapper.ArticleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,26 +14,43 @@ import org.springframework.stereotype.Service;
 @Service
 public class ArticleService {
 
-    @Autowired
-    private ArticleMapper articleMapper;
+    private final ArticleMapper articleMapper;
+    
+    public ArticleService(ArticleMapper articleMapper) {
+        this.articleMapper = articleMapper;
+    }
 
     /**
-     * 获取文章详情
+     * 获取文章完整信息（包含内容和基本信息）
      */
-    @Cacheable(value = "article", key = "#id")
-    public Article getArticleContent(String id) {
-        Article article = articleMapper.selectArticleContent(Integer.parseInt(id));
-        if (article != null) {
-            // 增加浏览次数
-            articleMapper.incrementViewCount(Integer.parseInt(id));
+    public Article getArticleBase(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return null;
         }
-        return article;
+        try {
+            return articleMapper.selectArticleBase(Integer.parseInt(id));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * 获取文章内容（纯文本）
+     */
+    public String getArticleContentOnly(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return articleMapper.selectArticleContent(Integer.parseInt(id));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /**
      * 分页获取文章列表
      */
-    @Cacheable(value = "articles", key = "#articleType + '_' + #currentPage + '_' + #pageSize")
     public IPage<Article> getArticlePage(String articleType, int currentPage, int pageSize) {
         Page<Article> page = new Page<>(currentPage, pageSize);
         return articleMapper.selectArticlePage(page, articleType);

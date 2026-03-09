@@ -14,9 +14,11 @@ import java.util.stream.Collectors;
  * 协同过滤推荐服务
  * 实现基于用户浏览记录的岗位推荐算法
  * 使用余弦相似度计算岗位间相似度，为用户提供个性化推荐
+ * 
+ * 【职责定位】：纯粹的 CF 算法实现层，不包含业务规则和降级逻辑
  */
 @Service
-public class CollaborativeFilteringRecommendationService {
+public class CollaborativeFilteringService {
 
     @Autowired
     private UserPositionHistoryMapper userPositionHistoryMapper;
@@ -25,8 +27,63 @@ public class CollaborativeFilteringRecommendationService {
     private PositionMapper positionMapper;
 
     /**
-     * 构建用户-浏览岗位映射关系
-     * @return Map<userAccount, Set<positionId>> 用户账号到岗位ID集合的映射
+     * 为指定用户生成岗位推荐列表（纯 CF 算法，仅校外岗位）
+     * 基于用户的浏览历史和岗位相似度进行协同过滤推荐
+     * 
+     * @param userAccount 目标用户账号
+     * @return 推荐的岗位列表（可能为空）
+     */
+    public List<Position> recommendByCF(String userAccount) {
+        // 如果 userAccount 为空或 null，直接返回空列表（由调用方决定降级策略）
+        if (userAccount == null || userAccount.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+            
+        // 获取用户已浏览的岗位
+        Map<String, Set<Integer>> userBrowseJobMap = getUserBrowseJobMap();
+        Set<Integer> userBrowsedJobs = userBrowseJobMap.get(userAccount);
+            
+        // 如果用户没有浏览记录，直接返回空列表（由调用方决定降级策略）
+        if (userBrowsedJobs == null || userBrowsedJobs.isEmpty()) {
+            return new ArrayList<>();
+        }
+            
+        // 计算岗位相似度
+        Map<Integer, Map<Integer, Double>> jobSimMatrix = calculateJobSimilarities();
+            
+        // 计算推荐分数
+        Map<Integer, Double> candidateScores = new HashMap<>();
+            
+        for (Integer browsedJobId : userBrowsedJobs) {
+            Map<Integer, Double> similarities = jobSimMatrix.get(browsedJobId);
+            if (similarities != null) {
+                for (Map.Entry<Integer, Double> entry : similarities.entrySet()) {
+                    Integer candidateJobId = entry.getKey();
+                    Double similarity = entry.getValue();
+                        
+                    // 过滤掉用户已经浏览过的岗位
+                    if (!userBrowsedJobs.contains(candidateJobId)) {
+                        candidateScores.merge(candidateJobId, similarity, Double::sum);
+                    }
+                }
+            }
+        }
+            
+        // 按相似度降序排序，取 TopN（仅校外岗位）
+        return candidateScores.entrySet().stream()
+                .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
+                .limit(4)  // 只取前 4 个 CF 推荐
+                .map(entry -> positionMapper.selectById(entry.getKey()))
+                .filter(Objects::nonNull)  // 过滤可能不存在的岗位
+                .filter(pos -> pos.getUniversityName() == null || pos.getUniversityName().trim().isEmpty())  // 只保留校外岗位
+                .collect(Collectors.toList());
+    }
+
+
+
+    /**
+     * 构建用户 - 浏览岗位映射关系
+     * @return Map<userAccount, Set<positionId>> 用户账号到岗位 ID 集合的映射
      */
     public Map<String, Set<Integer>> getUserBrowseJobMap() {
         List<UserPositionHistory> allHistories = userPositionHistoryMapper.getAllUserPositionHistories();
@@ -47,7 +104,7 @@ public class CollaborativeFilteringRecommendationService {
      * @return Map<positionId, Map<positionId, similarity>> 岗位相似度矩阵
      */
     public Map<Integer, Map<Integer, Double>> calculateJobSimilarities() {
-        // 获取所有用户-岗位浏览记录
+        // 获取所有用户 - 岗位浏览记录
         Map<String, Set<Integer>> userBrowseJobMap = getUserBrowseJobMap();
         
         // 获取所有用户和岗位列表
@@ -57,7 +114,7 @@ public class CollaborativeFilteringRecommendationService {
             allJobs.addAll(jobs);
         }
         
-        // 构建用户-岗位评分矩阵（使用浏览次数作为权重）
+        // 构建用户 - 岗位评分矩阵（使用浏览次数作为权重）
         Map<String, Map<Integer, Integer>> userJobMatrix = new HashMap<>();
         List<UserPositionHistory> allHistories = userPositionHistoryMapper.getAllUserPositionHistories();
         for (UserPositionHistory history : allHistories) {
@@ -105,77 +162,6 @@ public class CollaborativeFilteringRecommendationService {
         }
         
         return jobSimMatrix;
-    }
-
-    /**
-     * 为指定用户生成岗位推荐列表
-     * 基于用户的浏览历史和岗位相似度进行协同过滤推荐（仅校外岗位）
-     * @param userAccount 目标用户账号
-     * @return 推荐的岗位列表
-     */
-    public List<Position> recommendJobsForUser(String userAccount) {
-        // 如果 userAccount 为空或 null，返回随机推荐
-        if (userAccount == null || userAccount.trim().isEmpty()) {
-            return getRandomRecommendations(4, new HashSet<>());
-        }
-            
-        // 获取用户已浏览的岗位
-        Map<String, Set<Integer>> userBrowseJobMap = getUserBrowseJobMap();
-        Set<Integer> userBrowsedJobs = userBrowseJobMap.get(userAccount);
-            
-        // 如果用户没有浏览记录，返回随机推荐
-        if (userBrowsedJobs == null || userBrowsedJobs.isEmpty()) {
-            return getRandomRecommendations(4, new HashSet<>());
-        }
-            
-        // 计算岗位相似度
-        Map<Integer, Map<Integer, Double>> jobSimMatrix = calculateJobSimilarities();
-            
-        // 计算推荐分数
-        Map<Integer, Double> candidateScores = new HashMap<>();
-            
-        for (Integer browsedJobId : userBrowsedJobs) {
-            Map<Integer, Double> similarities = jobSimMatrix.get(browsedJobId);
-            if (similarities != null) {
-                for (Map.Entry<Integer, Double> entry : similarities.entrySet()) {
-                    Integer candidateJobId = entry.getKey();
-                    Double similarity = entry.getValue();
-                        
-                    // 过滤掉用户已经浏览过的岗位
-                    if (!userBrowsedJobs.contains(candidateJobId)) {
-                        candidateScores.merge(candidateJobId, similarity, Double::sum);
-                    }
-                }
-            }
-        }
-            
-        // 按相似度降序排序，取 TopN
-        return candidateScores.entrySet().stream()
-                .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
-                .limit(4)  // 只取前 4 个 CF 推荐
-                .map(entry -> positionMapper.selectById(entry.getKey()))
-                .filter(Objects::nonNull)  // 过滤可能不存在的岗位
-                .filter(pos -> pos.getUniversityName() == null || pos.getUniversityName().trim().isEmpty())  // 只保留校外岗位
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 获取随机推荐岗位
-     * @param count 需要的数量
-     * @param excludeIds 排除的 ID 集合
-     * @return 随机推荐的岗位列表
-     */
-    public List<Position> getRandomRecommendations(int count, Set<Integer> excludeIds) {
-        List<Position> allPositions = positionMapper.selectRandomPositions();
-        List<Position> availablePositions = allPositions.stream()
-                .filter(pos -> pos.getId() != null && !excludeIds.contains(pos.getId()))
-                .collect(Collectors.toList());
-        
-        // 随机打乱并取前 count 个
-        Collections.shuffle(availablePositions);
-        return availablePositions.stream()
-                .limit(count)
-                .collect(Collectors.toList());
     }
 
 }

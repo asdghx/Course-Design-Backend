@@ -1,0 +1,24 @@
+【整体架构图】
+
+                         Controller 层
+                             │
+              ┌──────────────┴──────────────┐
+              │                              │
+         管理层 Service                推荐策略层 Service
+    (PositionManagement)          (PositionRecommendation)
+              │                              │
+              │                       ┌──────┴──────┐
+              │                       │             │
+              │                  CF 算法实现    LBS 推荐实现
+              │              (Collaborative   (LocationBased
+              │               Filtering)       Recommendation)
+              │
+              └──────────────┬──────────────┐
+                             │              │
+                      ┌──────▼──────┐  ┌────▼─────┐
+                      │ VO 转换工具  │  │分页构造器│
+                      │PositionVO   │  │PageResult│
+                      │Converter    │  │Builder   │
+                      └─────────────┘  └──────────┘
+
+================================================================================

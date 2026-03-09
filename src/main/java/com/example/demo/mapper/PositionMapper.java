@@ -72,4 +72,14 @@ public interface PositionMapper extends BaseMapper<Position> {
         @Param("minLon") Double minLon,
         @Param("maxLon") Double maxLon
     );
+    
+    /**
+     * 批量查询岗位信息
+     * @param positionIds 岗位 ID 列表
+     * @return 岗位列表
+     */
+    @Select("<script>SELECT id, employer_account, salary_min, salary_max, job_description, work_location, university_name, latitude, longitude, status, create_time FROM position WHERE id IN " +
+           "<foreach item='id' collection='positionIds' open='(' separator=',' close=')'>#{id}</foreach>" +
+           "</script>")
+    List<Position> selectBatchIds(@Param("positionIds") List<Integer> positionIds);
 }

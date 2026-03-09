@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.mapper.UserLoginMapper">
 
-    <!-- 登录验证专用查询 -->
+    <!-- 根据账号和类型查询用户（登录验证） -->
     <select id="selectByAccountAndType" resultType="com.example.demo.entity.UserLogin">
         SELECT user_account, user_password, salt_value, user_type
         FROM user_login 

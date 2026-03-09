@@ -5,12 +5,13 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-@TableName("user_position_history")
 public class UserPositionHistory {
     private String userAccount;
     private Integer positionId;
-    private Integer browseCount = 1;
+    private Integer browseCount;
+    private Integer deliveryCount;
+    private Integer passCount;
     
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date lastBrowseTime = new Date();
+    private Date updateTime;
 }

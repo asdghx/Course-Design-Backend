@@ -4,8 +4,6 @@ import com.example.demo.entity.Employee;
 import com.example.demo.mapper.EmployeeMapper;
 import com.example.demo.common.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -22,17 +20,15 @@ public class EmployeeManagementService {
     }
 
     /**
-     * 获取员工信息（带缓存）
+     * 获取员工信息
      */
-    @Cacheable(value = "employee", key = "#userAccount")
     public Employee getEmployeeInfo(String userAccount){
         return employeeMapper.selectEmployee(userAccount);
     }
 
     /**
-     * 保存或更新员工信息（upsert操作，清除缓存）
+     * 保存或更新员工信息（upsert 操作）
      */
-    @CacheEvict(value = "employee", key = "#userAccount")
     public String upsertEmployee(String userAccount, String employeeName, String phoneNumber, String universityName, String jobIntention, String resume){
         // 参数验证
         if (ValidationUtils.isEmpty(userAccount)) {

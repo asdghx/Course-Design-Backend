@@ -7,14 +7,15 @@ import java.util.Date;
 
 /**
  * 简历投递记录实体类
- * 对应数据库表 resume_delivery
+ * 对应数据库表 resumedelivery
  */
 @Data
-@TableName("resume_delivery")
 public class ResumeDelivery {
+    @TableId(type = IdType.AUTO)
+    private Integer id;  // 投递记录 ID（自增主键）
+    
     private String userAccount;
-    @TableId(type = IdType.NONE)
-    private Integer positionId;  // int unsigned 映射为 Integer 类型
+    private Integer positionId;  // 岗位 ID
     
     private Integer deliveryStatus = 1;  // 投递状态，默认已投递
     private Date statusUpdateTime;       // 状态更新时间

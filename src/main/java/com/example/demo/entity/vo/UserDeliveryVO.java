@@ -18,17 +18,11 @@ public class UserDeliveryVO {
     private Integer salaryMin;
     private Integer salaryMax;
     private String workLocation;
-    private String experienceRequirement;
-    private String educationRequirement;
-    private Date positionCreateTime;
-    private Integer positionStatus;
-    private Integer isCampusJob; // 是否校内岗位：1=是，0=否
+    private String universityName; // 大学名称，为空表示校外岗位
     
-    // 来自ResumeDelivery表的字段
-    private String userAccount;
+    // 来自 ResumeDelivery 表的字段
     private Integer deliveryStatus;
     private Date deliveryCreateTime;
-    private Date statusUpdateTime;
     
     // 状态描述
     private String statusDesc;

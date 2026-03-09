@@ -41,13 +41,6 @@ public class MD5Util {
     }
 
     /**
-     * 不带盐值的简单MD5加密（兼容现有数据）
-     */
-    public static String encrypt(String plainText) {
-        return encryptWithSalt(plainText, "");
-    }
-
-    /**
      * 验证带盐的密码是否匹配
      */
     public static boolean verifyWithSalt(String plainPassword, String encryptedPassword, String salt) {

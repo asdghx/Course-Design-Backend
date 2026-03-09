@@ -12,8 +12,7 @@
 
     <!-- 分页查询用户收藏的文章 -->
     <select id="selectCollectedArticles" resultType="com.example.demo.entity.Article">
-        SELECT a.id, a.author_account, a.article_type, a.title, 
-               a.content, a.create_time
+        SELECT a.id, a.author_account, a.article_type, a.title, a.create_time
         FROM article a
         INNER JOIN collection ac ON a.id = ac.article_id
         WHERE ac.user_account = #{userAccount}

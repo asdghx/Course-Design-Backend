@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Employee;
+import com.example.demo.entity.Employer;
 import com.example.demo.entity.UserLogin;
 import com.example.demo.common.Result;
 import com.example.demo.common.ValidationUtils;
@@ -13,7 +14,6 @@ import java.util.Map;
 
 /**
  * 用户控制器
- * 处理用户相关的API请求
  */
 @RestController
 @RequestMapping("/api/user")
@@ -21,51 +21,45 @@ public class UserController {
 
     @Autowired
     private UserLoginService userLoginService;
-
     @Autowired
     private EmployeeManagementService employeeManagementService;
+    @Autowired
+    private EmployerManagementService employerManagementService;
 
     /**
-     * 用户登录接口
-     * 个人用户登录成功后返回Employee信息，企业用户返回基本登录信息
+     * 用户登录（个人用户返回 Employee，企业用户返回 Employer）
      */
     @PostMapping("/login")
     public Result<?> login(
             @RequestParam("userAccount") String userAccount,
             @RequestParam("userPassword") String userPassword,
             @RequestParam("userType") Integer userType
-    ){
+    ) {
         // 1. 参数校验
-        String errorMsg = ValidationUtils.validateLoginParams(userAccount, userPassword, userType);
+        String errorMsg = ValidationUtils.validateUserParams(userAccount, userPassword, userType);
         if (errorMsg != null) {
             return Result.badRequest(errorMsg);
         }
-        
+            
         // 2. 执行登录验证
-        String loginResult = userLoginService.loginUser(userAccount, userPassword, userType);
-        if (!loginResult.equals("登录成功")) {
-            return Result.fail(loginResult);
-        }
-        
-        // 3. 根据用户类型返回相应信息
         return buildLoginResponse(userAccount, userType);
     }
 
     /**
-     * 用户注册接口
+     * 用户注册
      */
     @PostMapping("/register")
     public Result<String> register(
             @RequestParam("userAccount") String userAccount,
             @RequestParam("userPassword") String userPassword,
             @RequestParam("userType") Integer userType
-    ){
+    ) {
         // 1. 参数校验
-        String errorMsg = ValidationUtils.validateRegisterParams(userAccount, userPassword, userType);
+        String errorMsg = ValidationUtils.validateUserParams(userAccount, userPassword, userType);
         if (errorMsg != null) {
             return Result.badRequest(errorMsg);
         }
-        
+            
         // 2. 执行注册
         String registerResult = userLoginService.registerUser(userAccount, userPassword, userType);
         
@@ -75,7 +69,6 @@ public class UserController {
 
     /**
      * 构建登录响应
-     * 根据用户类型返回相应的用户信息
      */
     private Result<?> buildLoginResponse(String userAccount, Integer userType) {
         if (userType == UserLogin.USER_TYPE_PERSONAL) {
@@ -88,25 +81,44 @@ public class UserController {
                 UserLogin userLogin = userLoginService.getUserLoginByAccountAndType(userAccount, userType);
                 return Result.ok(userLogin);
             }
+        } else if (userType == UserLogin.USER_TYPE_ENTERPRISE) {
+            // 企业用户返回 Employer 信息
+            Employer employer = employerManagementService.getEmployerInfo(userAccount);
+            if (employer != null) {
+                return Result.ok(employer);
+            } else {
+                // 如果没有企业信息，返回基础登录信息
+                UserLogin userLogin = userLoginService.getUserLoginByAccountAndType(userAccount, userType);
+                return Result.ok(userLogin);
+            }
         } else {
-            // 企业用户返回基础登录信息
+            // 其他类型返回基础登录信息
             UserLogin userLogin = userLoginService.getUserLoginByAccountAndType(userAccount, userType);
             return Result.ok(userLogin);
         }
     }
 
     /**
-     * 获取员工信息接口
-     * 用于修改个人信息后获取最新数据
+     * 获取员工信息
      */
     @GetMapping("/employeeInfo")
     public Result<Employee> getEmployeeInfo(@RequestParam("userAccount") String userAccount){
         Employee employee = employeeManagementService.getEmployeeInfo(userAccount);
         return employee != null ? Result.ok(employee) : Result.fail("未找到该员工信息");
     }
-
+    
     /**
-     * 保存或更新员工信息接口（upsert操作）
+     * 获取企业信息
+     */
+    @GetMapping("/employerInfo")
+    public Result<Employer> getEmployerInfo(@RequestParam("employerAccount") String employerAccount){
+        Employer employer = employerManagementService.getEmployerInfo(employerAccount);
+        // 如果没有企业信息，返回 null
+        return Result.ok(employer);
+    }
+    
+    /**
+     * 保存或更新员工信息
      */
     @PostMapping("/upsertEmployee")
     public Result<String> upsertEmployee(
@@ -119,5 +131,26 @@ public class UserController {
     ){
         String msg = employeeManagementService.upsertEmployee(userAccount, name, phone, university, jobIntention, resume);
         return msg.equals("员工信息保存成功") ? Result.ok(msg) : Result.fail(msg);
+    }
+    
+    /**
+     * 保存或更新企业信息
+     */
+    @PostMapping("/upsertEmployer")
+    public Result<String> upsertEmployer(
+            @RequestParam("employerAccount") String employerAccount,
+            @RequestParam("companyName") String companyName,
+            @RequestParam("contactPhone") String contactPhone,
+            @RequestParam(value = "contactEmail", required = false) String contactEmail,
+            @RequestParam(value = "companyProfile", required = false) String companyProfile
+    ){
+        String msg = employerManagementService.upsertEmployer(
+            employerAccount, 
+            companyName,
+            contactPhone,
+            contactEmail,
+            companyProfile
+        );
+        return msg.equals("企业信息保存成功") ? Result.ok(msg) : Result.fail(msg);
     }
 }

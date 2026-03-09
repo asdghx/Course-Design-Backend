@@ -7,10 +7,10 @@ import java.util.Date;
 
 /**
  * 岗位实体类
- * 对应数据库表 job_info
+ * 对应数据库表 job
  */
 @Data
-@TableName("job_info")
+@TableName("job")
 public class Position {
     @TableId(type = IdType.AUTO)
     private Integer id;
