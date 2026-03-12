@@ -39,39 +39,23 @@ public class CollectionService {
      * 创建收藏
      */
     public String createCollection(Integer articleId, String userAccount){
-        // 参数验证
-        if (userAccount == null || userAccount.trim().isEmpty()) {
-            return "用户账号不能为空";
-        }
-        if (articleId == null) {
-            return "文章ID不能为空";
-        }
-        
         // 检查是否已收藏
         Collection existing = collectionMapper.selectByUserAndArticle(userAccount, articleId);
         if (existing != null) {
             return "已收藏该文章";
         }
-        
+            
         Collection collection = new Collection();
         collection.setUserAccount(userAccount);
         collection.setArticleId(articleId);
         int rows = collectionMapper.insertCollection(collection);
         return rows > 0 ? "收藏成功" : "收藏失败";
     }
-    
+        
     /**
      * 删除收藏
      */
     public String deleteCollection(Integer articleId, String userAccount){
-        // 参数验证
-        if (userAccount == null || userAccount.trim().isEmpty()) {
-            return "用户账号不能为空";
-        }
-        if (articleId == null) {
-            return "文章 ID 不能为空";
-        }
-        
         int rows = collectionMapper.deleteCollection(articleId, userAccount);
         return rows > 0 ? "取消收藏成功" : "取消收藏失败";
     }

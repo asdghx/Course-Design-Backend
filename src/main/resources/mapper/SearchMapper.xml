@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.SearchMapper">
+
+    <resultMap id="ArticleResult" type="com.example.demo.entity.Article">
+        <id property="id" column="id"/>
+        <result property="articleType" column="article_type"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="authorAccount" column="author_account"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- 根据关键词搜索文章 -->
+    <select id="searchByKeywords" resultMap="ArticleResult">
+        SELECT id, article_type, title, content, author_account, create_time, view_count
+        FROM article
+        WHERE 1=1
+        <!-- 如果指定了文章类型，则添加类型过滤 -->
+        <if test="articleType != null and articleType != ''">
+            AND article_type = #{articleType}
+        </if>
+        <!-- 分词后的各个词挨个匹配，只要匹配任意一个词就返回 -->
+        AND (
+            <foreach collection="keywords" item="keyword" separator="OR">
+                title LIKE CONCAT('%', #{keyword}, '%')
+                OR content LIKE CONCAT('%', #{keyword}, '%')
+            </foreach>
+        )
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>

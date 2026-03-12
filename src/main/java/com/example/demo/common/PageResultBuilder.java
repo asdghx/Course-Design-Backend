@@ -8,13 +8,11 @@ import java.util.List;
 /**
  * 分页结果构造器
  * 提供统一的 MyBatis-Plus Page 对象构造和转换功能
- * 
- * 【复用场景】：所有需要返回分页结果的 Service 层
  */
 public class PageResultBuilder {
     
     /**
-     * 基于源分页对象构建新的分页结果（泛型版本）
+     * 基于源分页对象构建新的分页结果
      * 
      * @param sourcePage 源分页对象（包含分页参数和总数信息）
      * @param records 新的记录列表
@@ -25,23 +23,6 @@ public class PageResultBuilder {
         resultPage.setRecords(records);
         resultPage.setTotal(sourcePage.getTotal());
         resultPage.setPages(sourcePage.getPages());
-        return resultPage;
-    }
-    
-    /**
-     * 基于源分页对象构建新的分页结果（指定 total 和 pages）
-     * 
-     * @param sourcePage 源分页对象（包含 current 和 size）
-     * @param records 记录列表
-     * @param total 总记录数
-     * @param pages 总页数
-     * @return 新的分页对象
-     */
-    public static <T> Page<T> build(Page<?> sourcePage, List<T> records, long total, long pages) {
-        Page<T> resultPage = new Page<>(sourcePage.getCurrent(), sourcePage.getSize());
-        resultPage.setRecords(records);
-        resultPage.setTotal(total);
-        resultPage.setPages(pages);
         return resultPage;
     }
     
@@ -57,15 +38,5 @@ public class PageResultBuilder {
         emptyPage.setRecords(new ArrayList<>());
         emptyPage.setTotal(0L);
         return emptyPage;
-    }
-    
-    /**
-     * 创建空的分页结果（使用默认页大小 8）
-     * 
-     * @param current 当前页码
-     * @return 空分页对象
-     */
-    public static <T> Page<T> buildEmptyWithDefaultSize(long current) {
-        return buildEmpty(current, 8L);
     }
 }

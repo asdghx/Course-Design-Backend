@@ -26,5 +26,4 @@ public interface ArticleMapper extends BaseMapper<Article> {
 
     @Update("UPDATE article SET view_count = view_count + 1 WHERE id = #{id}")
     int incrementViewCount(@Param("id") Integer id);
-
 }

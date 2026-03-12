@@ -2,22 +2,14 @@ package com.example.demo.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.demo.entity.Employer;
-import com.example.demo.entity.Position;
-import com.example.demo.entity.vo.PositionVO;
-import com.example.demo.common.ValidationUtils;
 import com.example.demo.common.PageResultBuilder;
 import com.example.demo.common.PositionVOConverter;
-import com.example.demo.mapper.EmployerMapper;
+import com.example.demo.entity.Position;
+import com.example.demo.entity.vo.PositionVO;
 import com.example.demo.mapper.PositionMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 岗位管理服务类
@@ -25,11 +17,12 @@ import java.util.stream.Collectors;
  */
 @Service
 public class PositionManagementService {
-    @Autowired
-    private PositionMapper positionMapper;
-    
-    @Autowired
-    private EmployerMapper employerMapper;
+    private final PositionMapper positionMapper;
+    private final PositionVOConverter positionVOConverter;
+    public PositionManagementService(PositionMapper positionMapper, PositionVOConverter positionVOConverter) {
+        this.positionMapper = positionMapper;
+        this.positionVOConverter = positionVOConverter;
+    }
 
     /**
      * 根据企业账号分页查询岗位列表（HR 管理专用，不限制学校和状态）
@@ -38,12 +31,12 @@ public class PositionManagementService {
      * @param pageSize 每页大小
      * @return 岗位分页结果
      */
-    public com.baomidou.mybatisplus.core.metadata.IPage<PositionVO> getPositionListByEmployerAccountWithPagination(String employerAccount, Integer currentPage, Integer pageSize) {
+    public IPage<PositionVO> getPositionListByEmployerAccountWithPagination(String employerAccount, Integer currentPage, Integer pageSize) {
         Page<Position> page = new Page<>(currentPage, pageSize);
-        IPage<Position> positionPage = positionMapper.selectHrPositions(page, employerAccount);
+        IPage<Position> positionPage = positionMapper.selectPositionsDynamic(page, employerAccount);
         
         // 转换为 VO 列表
-        List<PositionVO> voList = PositionVOConverter.convertFromPageRecords(positionPage, employerMapper);
+        List<PositionVO> voList = positionVOConverter.convertFromPageRecords(positionPage);
         
         // 构造返回结果
         return PageResultBuilder.build(page, voList);
@@ -52,15 +45,9 @@ public class PositionManagementService {
     /**
      * 获取所有岗位的分页列表
      */
-    public com.baomidou.mybatisplus.core.metadata.IPage<PositionVO> getAllPositionsPaged(Integer currentPage, Integer pageSize) {
-        Page<Position> page = new Page<>(currentPage, pageSize);
-        IPage<Position> positionPage = positionMapper.selectPage(page, null);
-        
-        // 转换为 VO 列表
-        List<PositionVO> voList = PositionVOConverter.convertFromPageRecords(positionPage, employerMapper);
-        
-        // 构造返回结果
-        return PageResultBuilder.build(page, voList);
+    public IPage<PositionVO> getAllPositionsPaged(Integer currentPage, Integer pageSize) {
+        // 复用通用查询方法，传入 null 表示查询所有岗位
+        return getPositionListByEmployerAccountWithPagination(null, currentPage, pageSize);
     }
 
     /**
@@ -69,7 +56,7 @@ public class PositionManagementService {
     public String createPosition(String employerAccount, Integer salaryMin, Integer salaryMax, String jobDescription, String workLocation, String universityName, Double latitude, Double longitude) {
         Position position = createPositionObject(employerAccount, salaryMin, salaryMax, jobDescription, workLocation, universityName, latitude, longitude);
         position.setStatus(1); // 默认有效状态
-        int rows = positionMapper.insertPosition(position);
+        int rows = positionMapper.upsertPosition(position);
         return rows > 0 ? "添加岗位成功" : "添加岗位失败";
     }
 
@@ -78,8 +65,8 @@ public class PositionManagementService {
      */
     public String updatePositionById(Integer id, Integer salaryMin, Integer salaryMax, String jobDescription, String workLocation, String universityName, Double latitude, Double longitude) {
         Position position = createPositionObject(null, salaryMin, salaryMax, jobDescription, workLocation, universityName, latitude, longitude);
-        position.setId(id);  // 设置 ID 用于更新条件
-        int rows = positionMapper.updatePosition(position);
+        position.setId(id);  // 设置 ID 用于 UPSERT
+        int rows = positionMapper.upsertPosition(position);
         return rows > 0 ? "更新岗位成功" : "更新岗位失败";
     }
 
@@ -99,7 +86,7 @@ public class PositionManagementService {
         Position position = new Position();
         position.setId(positionId);
         position.setStatus(0);  // 设置为无效
-        int rows = positionMapper.updatePosition(position);
+        int rows = positionMapper.upsertPosition(position);
         
         return rows > 0 ? "删除岗位成功" : "删除岗位失败";
     }

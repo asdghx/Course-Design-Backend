@@ -2,10 +2,8 @@ package com.example.demo.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.demo.entity.Employer;
 import com.example.demo.entity.Position;
 import com.example.demo.entity.vo.PositionVO;
-import com.example.demo.mapper.EmployerMapper;
 import com.example.demo.mapper.PositionMapper;
 import com.example.demo.common.PageResultBuilder;
 import com.example.demo.common.PositionVOConverter;
@@ -25,15 +23,16 @@ public class PositionRecommendationService {
     private final CollaborativeFilteringService collaborativeFilteringService;
     private final LocationBasedRecommendationService locationBasedRecommendationService;
     private final PositionMapper positionMapper;
-    private final EmployerMapper employerMapper;
+    private final PositionVOConverter positionVOConverter;
+    
     public PositionRecommendationService(CollaborativeFilteringService collaborativeFilteringService,
                                          LocationBasedRecommendationService locationBasedRecommendationService,
                                          PositionMapper positionMapper,
-                                         EmployerMapper employerMapper) {
+                                         PositionVOConverter positionVOConverter) {
         this.collaborativeFilteringService = collaborativeFilteringService;
         this.locationBasedRecommendationService = locationBasedRecommendationService;
         this.positionMapper = positionMapper;
-        this.employerMapper = employerMapper;
+        this.positionVOConverter = positionVOConverter;
     }
 
     /**
@@ -50,7 +49,7 @@ public class PositionRecommendationService {
         
         // 转换为 VO 并返回
         return positions.stream()
-                .map(p -> PositionVOConverter.convertToVO(p, employerMapper))
+                .map(positionVOConverter::convertToVO)
                 .collect(Collectors.toList());
     }
     
@@ -85,8 +84,10 @@ public class PositionRecommendationService {
      */
     private List<Position> getCFRecommendations(String userAccount, String universityName) {
         // Step 1: 获取 CF 推荐（纯算法，可能返回空）
+        // 传入 pageSize=8，确保第 1 页有足够的 CF 推荐数据
         List<Position> recommendations = collaborativeFilteringService.recommendByCF(
-            userAccount == null ? "" : userAccount
+            userAccount == null ? "" : userAccount,
+            8  // 使用默认分页大小 8
         );
         
         // 处理空值
@@ -149,7 +150,7 @@ public class PositionRecommendationService {
         Page<Position> positionPage = new Page<>(currentPage, pageSize);
         IPage<Position> allPositions = positionMapper.selectPositionPage(positionPage, null, targetUniversity);
         
-        List<PositionVO> voList = PositionVOConverter.convertFromPageRecords(allPositions, employerMapper);
+        List<PositionVO> voList = positionVOConverter.convertFromPageRecords(allPositions);
         
         return PageResultBuilder.build(positionPage, voList);
     }
@@ -179,7 +180,7 @@ public class PositionRecommendationService {
         // 取前 pageSize 条数据并转换为 VO
         int endIndex = Math.min((int) pageSize, cfRecommendations.size());
         List<PositionVO> pagedResults = endIndex > 0 ? 
-            PositionVOConverter.convertToVOList(cfRecommendations.subList(0, endIndex), employerMapper) : new ArrayList<>();
+            positionVOConverter.convertToVOList(cfRecommendations.subList(0, endIndex)) : new ArrayList<>();
         
         // 构造返回结果
         Page<PositionVO> resultPage = PageResultBuilder.build(new Page<>(currentPage, pageSize), pagedResults);
@@ -200,7 +201,7 @@ public class PositionRecommendationService {
             return createEmptyPage(currentPage, pageSize);
         }
         
-        List<PositionVO> voList = PositionVOConverter.convertFromPageRecords(allPositions, employerMapper);
+        List<PositionVO> voList = positionVOConverter.convertFromPageRecords(allPositions);
         
         return PageResultBuilder.build(positionPage, voList);
     }

@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.common.CosineSimilarityUtil;
 import com.example.demo.entity.Position;
 import com.example.demo.entity.UserPositionHistory;
 import com.example.demo.mapper.PositionMapper;
@@ -31,137 +32,106 @@ public class CollaborativeFilteringService {
      * 基于用户的浏览历史和岗位相似度进行协同过滤推荐
      * 
      * @param userAccount 目标用户账号
+     * @param limit 返回数量限制（通常等于分页的 pageSize）
      * @return 推荐的岗位列表（可能为空）
      */
-    public List<Position> recommendByCF(String userAccount) {
-        // 如果 userAccount 为空或 null，直接返回空列表（由调用方决定降级策略）
+    public List<Position> recommendByCF(String userAccount, int limit) {
         if (userAccount == null || userAccount.trim().isEmpty()) {
             return new ArrayList<>();
         }
-            
-        // 获取用户已浏览的岗位
-        Map<String, Set<Integer>> userBrowseJobMap = getUserBrowseJobMap();
+        
+        // 查询所有浏览记录
+        List<UserPositionHistory> allHistories = userPositionHistoryMapper.getAllUserPositionHistories();
+        
+        // 构建用户 - 岗位映射
+        Map<String, Set<Integer>> userBrowseJobMap = new HashMap<>();
+        for (UserPositionHistory history : allHistories) {
+            userBrowseJobMap.computeIfAbsent(history.getUserAccount(), k -> new HashSet<>())
+                    .add(history.getPositionId());
+        }
+        
         Set<Integer> userBrowsedJobs = userBrowseJobMap.get(userAccount);
-            
-        // 如果用户没有浏览记录，直接返回空列表（由调用方决定降级策略）
         if (userBrowsedJobs == null || userBrowsedJobs.isEmpty()) {
             return new ArrayList<>();
         }
-            
-        // 计算岗位相似度
-        Map<Integer, Map<Integer, Double>> jobSimMatrix = calculateJobSimilarities();
-            
+        
+        // 计算岗位相似度矩阵
+        Map<Integer, Map<Integer, Double>> jobSimMatrix = calculateJobSimilarities(allHistories, userBrowseJobMap);
+        
         // 计算推荐分数
         Map<Integer, Double> candidateScores = new HashMap<>();
-            
         for (Integer browsedJobId : userBrowsedJobs) {
             Map<Integer, Double> similarities = jobSimMatrix.get(browsedJobId);
             if (similarities != null) {
                 for (Map.Entry<Integer, Double> entry : similarities.entrySet()) {
                     Integer candidateJobId = entry.getKey();
                     Double similarity = entry.getValue();
-                        
-                    // 过滤掉用户已经浏览过的岗位
                     if (!userBrowsedJobs.contains(candidateJobId)) {
                         candidateScores.merge(candidateJobId, similarity, Double::sum);
                     }
                 }
             }
         }
-            
+        
         // 按相似度降序排序，取 TopN（仅校外岗位）
         return candidateScores.entrySet().stream()
                 .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
-                .limit(4)  // 只取前 4 个 CF 推荐
+                .limit(limit)
                 .map(entry -> positionMapper.selectById(entry.getKey()))
-                .filter(Objects::nonNull)  // 过滤可能不存在的岗位
-                .filter(pos -> pos.getUniversityName() == null || pos.getUniversityName().trim().isEmpty())  // 只保留校外岗位
+                .filter(Objects::nonNull)
+                .filter(pos -> pos.getUniversityName() == null || pos.getUniversityName().trim().isEmpty())
                 .collect(Collectors.toList());
     }
 
 
 
-    /**
-     * 构建用户 - 浏览岗位映射关系
-     * @return Map<userAccount, Set<positionId>> 用户账号到岗位 ID 集合的映射
-     */
-    public Map<String, Set<Integer>> getUserBrowseJobMap() {
-        List<UserPositionHistory> allHistories = userPositionHistoryMapper.getAllUserPositionHistories();
-        
-        Map<String, Set<Integer>> userBrowseJobMap = new HashMap<>();
-        for (UserPositionHistory history : allHistories) {
-            String userAccount = history.getUserAccount();
-            Integer positionId = history.getPositionId();
-            
-            userBrowseJobMap.computeIfAbsent(userAccount, k -> new HashSet<>()).add(positionId);
-        }
-        return userBrowseJobMap;
-    }
+
 
     /**
      * 计算岗位间相似度矩阵
-     * 使用余弦相似度算法计算岗位之间的相似度
-     * @return Map<positionId, Map<positionId, similarity>> 岗位相似度矩阵
+     * @param allHistories 所有浏览历史记录
+     * @param userBrowseJobMap 用户 - 岗位映射
+     * @return 岗位相似度矩阵
      */
-    public Map<Integer, Map<Integer, Double>> calculateJobSimilarities() {
-        // 获取所有用户 - 岗位浏览记录
-        Map<String, Set<Integer>> userBrowseJobMap = getUserBrowseJobMap();
+    private Map<Integer, Map<Integer, Double>> calculateJobSimilarities(
+            List<UserPositionHistory> allHistories,
+            Map<String, Set<Integer>> userBrowseJobMap) {
         
-        // 获取所有用户和岗位列表
-        Set<String> allUsers = userBrowseJobMap.keySet();
-        Set<Integer> allJobs = new HashSet<>();
-        for (Set<Integer> jobs : userBrowseJobMap.values()) {
-            allJobs.addAll(jobs);
+        // 预计算岗位分数（浏览*1 + 投递*3 + 通过*5）
+        Map<Integer, Integer> jobScoreMap = new HashMap<>();
+        for (UserPositionHistory h : allHistories) {
+            int posId = h.getPositionId();
+            if (!jobScoreMap.containsKey(posId)) {
+                int score = (h.getBrowseCount() != null ? h.getBrowseCount() : 0)
+                          + (h.getDeliveryCount() != null ? h.getDeliveryCount() : 0) * 3
+                          + (h.getPassCount() != null ? h.getPassCount() : 0) * 5;
+                jobScoreMap.put(posId, score);
+            }
         }
         
-        // 构建用户 - 岗位评分矩阵（使用浏览次数作为权重）
-        Map<String, Map<Integer, Integer>> userJobMatrix = new HashMap<>();
-        List<UserPositionHistory> allHistories = userPositionHistoryMapper.getAllUserPositionHistories();
-        for (UserPositionHistory history : allHistories) {
-            String user = history.getUserAccount();
-            Integer jobId = history.getPositionId();
-            Integer score = history.getBrowseCount() != null ? history.getBrowseCount() : 1;
-            userJobMatrix.computeIfAbsent(user, k -> new HashMap<>()).put(jobId, score);
-        }
-        
-        // 计算岗位间的余弦相似度
-        Map<Integer, Map<Integer, Double>> jobSimMatrix = new HashMap<>();
-        List<Integer> jobIds = new ArrayList<>(allJobs);
-        
-        for (int i = 0; i < jobIds.size(); i++) {
-            for (int j = i; j < jobIds.size(); j++) {
-                Integer jobIdA = jobIds.get(i);
-                Integer jobIdB = jobIds.get(j);
-                
-                // 计算向量点积、模长
-                double dotProduct = 0.0;  // Σ(Ai * Bi)
-                double normA = 0.0;       // √ΣAi²
-                double normB = 0.0;       // √ΣBi²
-                
-                for (String user : allUsers) {
-                    int scoreA = userJobMatrix.getOrDefault(user, new HashMap<>()).getOrDefault(jobIdA, 0);
-                    int scoreB = userJobMatrix.getOrDefault(user, new HashMap<>()).getOrDefault(jobIdB, 0);
-                    
-                    dotProduct += scoreA * scoreB;
-                    normA += scoreA * scoreA;
-                    normB += scoreB * scoreB;
-                }
-                
-                // 计算余弦相似度
-                double cosineSimilarity = 0.0;
-                if (normA > 0 && normB > 0) {
-                    cosineSimilarity = dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
-                }
-                
-                // 存储相似度矩阵
-                jobSimMatrix.computeIfAbsent(jobIdA, k -> new HashMap<>()).put(jobIdB, cosineSimilarity);
-                if (!jobIdA.equals(jobIdB)) {
-                    jobSimMatrix.computeIfAbsent(jobIdB, k -> new HashMap<>()).put(jobIdA, cosineSimilarity);
+        // 构建岗位共现矩阵（基于用户共同浏览行为）
+        Map<Integer, Map<Integer, Integer>> coBrowseMatrix = new HashMap<>();
+        for (UserPositionHistory h : allHistories) {
+            int posId = h.getPositionId();
+            String user = h.getUserAccount();
+            Integer weight = jobScoreMap.get(posId);
+            
+            // 将该岗位与该用户浏览的其他岗位建立关联
+            Set<Integer> userBrowsedJobs = userBrowseJobMap.get(user);
+            if (userBrowsedJobs == null) continue;  // 跳过空值
+            
+            for (Integer otherPosId : userBrowsedJobs) {
+                if (posId != otherPosId) {  // 直接用 != 比较
+                    // 岗位 posId 和 otherPosId 被同一用户浏览，增加共现强度
+                    coBrowseMatrix.computeIfAbsent(posId, k -> new HashMap<>())
+                                  .merge(otherPosId, weight, Integer::sum);
                 }
             }
         }
         
-        return jobSimMatrix;
+        return CosineSimilarityUtil.calculateCosineSimilarity(coBrowseMatrix);
     }
+
+
 
 }

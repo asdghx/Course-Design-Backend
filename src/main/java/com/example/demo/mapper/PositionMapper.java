@@ -30,13 +30,13 @@ public interface PositionMapper extends BaseMapper<Position> {
                                        @Param("universityName") String universityName);
     
     /**
-     * HR 管理岗位分页查询（只按企业账号过滤，不限制学校和状态）
+     * 分页查询岗位信息（支持按企业账号过滤，不限制学校和状态）
      * @param page 分页对象
-     * @param employerAccount 企业账号（可选）
+     * @param employerAccount 企业账号（可选，为 null 时查询所有岗位）
      * @return 岗位分页结果
      */
-    IPage<Position> selectHrPositions(Page<Position> page, 
-                                      @Param("employerAccount") String employerAccount);
+    IPage<Position> selectPositionsDynamic(Page<Position> page, 
+                                           @Param("employerAccount") String employerAccount);
     
     /**
      * 获取随机岗位列表
@@ -45,18 +45,11 @@ public interface PositionMapper extends BaseMapper<Position> {
     List<Position> selectRandomPositions();
     
     /**
-     * 插入岗位信息
+     * 岗位 UPSERT 操作（有则更新，无则插入）
      * @param position 岗位对象
      * @return 影响行数
      */
-    int insertPosition(Position position);
-    
-    /**
-     * 更新岗位信息
-     * @param position 岗位对象
-     * @return 影响行数
-     */
-    int updatePosition(Position position);
+    int upsertPosition(Position position);
     
     /**
      * 根据经纬度范围查询岗位 (粗略过滤)

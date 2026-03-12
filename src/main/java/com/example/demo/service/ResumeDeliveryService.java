@@ -25,17 +25,14 @@ public class ResumeDeliveryService {
     private final ResumeDeliveryMapper resumeDeliveryMapper;
     private final PositionMapper positionMapper;
     private final EmployeeMapper employeeMapper;
-    private final UserLoginMapper userLoginMapper;
     
     public ResumeDeliveryService(
             ResumeDeliveryMapper resumeDeliveryMapper,
             PositionMapper positionMapper,
-            EmployeeMapper employeeMapper,
-            UserLoginMapper userLoginMapper) {
+            EmployeeMapper employeeMapper) {
         this.resumeDeliveryMapper = resumeDeliveryMapper;
         this.positionMapper = positionMapper;
         this.employeeMapper = employeeMapper;
-        this.userLoginMapper = userLoginMapper;
     }
 
     /**
@@ -104,81 +101,86 @@ public class ResumeDeliveryService {
     }
 
     /**
-     * 修改投递状态为已拒绝(0)
+     * 更新投递状态（统一接口）
+     * @param userAccount 用户账号
+     * @param positionId 岗位 ID
+     * @param status 目标状态（0-拒绝，2-邀约面试，3-面试通过，4-已入职）
+     * @return 操作结果消息
+     */
+  public String updateDeliveryStatus(String userAccount, Integer positionId, Integer status) {
+        // 参数验证
+        if (userAccount == null || userAccount.trim().isEmpty()) {
+            return "用户账号不能为空";
+        }
+        if (positionId == null) {
+            return "岗位 ID 不能为空";
+        }
+        if (status == null) {
+            return "状态不能为空";
+        }
+        
+        // 检查记录是否存在
+        int exists = resumeDeliveryMapper.checkDeliveryExists(userAccount, positionId);
+        if (exists <= 0) {
+            return "状态更新失败：投递记录不存在";
+        }
+        
+        // 根据状态调用不同的 Mapper 方法
+        int rows;
+        switch (status) {
+            case ResumeDelivery.STATUS_REJECTED:
+                rows = resumeDeliveryMapper.updateStatusToRejected(userAccount, positionId);
+                break;
+            case ResumeDelivery.STATUS_INTERVIEW:
+                rows = resumeDeliveryMapper.updateStatusToInterview(userAccount, positionId);
+                break;
+            case ResumeDelivery.STATUS_PASSED:
+                rows = resumeDeliveryMapper.updateStatusToPassed(userAccount, positionId);
+                break;
+            default:
+                return "不支持的状态值";
+        }
+        
+        return rows > 0 ? "状态更新成功" : "状态更新失败：当前状态不支持此操作";
+    }
+
+    /**
+     * 修改投递状态为已拒绝 (0)
      * 规则：任何时候都可以拒绝
      * @param userAccount 用户账号
-     * @param positionId 岗位ID
+     * @param positionId 岗位 ID
      * @return 操作结果消息
+     * @deprecated 请使用 {@link #updateDeliveryStatus(String, Integer, Integer)}
      */
-    public String updateStatusToRejected(String userAccount, Integer positionId) {
-        // 参数验证
-        if (userAccount == null || userAccount.trim().isEmpty()) {
-            return "用户账号不能为空";
-        }
-        if (positionId == null) {
-            return "岗位ID不能为空";
-        }
-        
-        // 检查记录是否存在
-        int exists = resumeDeliveryMapper.checkDeliveryExists(userAccount, positionId);
-        if (exists <= 0) {
-            return "状态更新失败：投递记录不存在";
-        }
-        
-        int rows = resumeDeliveryMapper.updateStatusToRejected(userAccount, positionId);
-        return rows > 0 ? "已拒绝该投递申请" : "无法拒绝：当前状态不支持此操作";
+    @Deprecated
+  public String updateStatusToRejected(String userAccount, Integer positionId) {
+        return updateDeliveryStatus(userAccount, positionId, ResumeDelivery.STATUS_REJECTED);
     }
 
     /**
-     * 修改投递状态为邀约面试(2)
+     * 修改投递状态为邀约面试 (2)
      * 规则：只能从未处理状态邀约
      * @param userAccount 用户账号
-     * @param positionId 岗位ID
+     * @param positionId 岗位 ID
      * @return 操作结果消息
+     * @deprecated 请使用 {@link #updateDeliveryStatus(String, Integer, Integer)}
      */
-    public String updateStatusToInterview(String userAccount, Integer positionId) {
-        // 参数验证
-        if (userAccount == null || userAccount.trim().isEmpty()) {
-            return "用户账号不能为空";
-        }
-        if (positionId == null) {
-            return "岗位ID不能为空";
-        }
-        
-        // 检查记录是否存在
-        int exists = resumeDeliveryMapper.checkDeliveryExists(userAccount, positionId);
-        if (exists <= 0) {
-            return "状态更新失败：投递记录不存在";
-        }
-        
-        int rows = resumeDeliveryMapper.updateStatusToInterview(userAccount, positionId);
-        return rows > 0 ? "已发送面试邀约" : "无法邀约：请先投递简历";
+    @Deprecated
+  public String updateStatusToInterview(String userAccount, Integer positionId) {
+        return updateDeliveryStatus(userAccount, positionId, ResumeDelivery.STATUS_INTERVIEW);
     }
 
     /**
-     * 修改投递状态为面试通过(3)
+     * 修改投递状态为面试通过 (3)
      * 规则：只能从邀约面试状态转通过
      * @param userAccount 用户账号
-     * @param positionId 岗位ID
+     * @param positionId 岗位 ID
      * @return 操作结果消息
+     * @deprecated 请使用 {@link #updateDeliveryStatus(String, Integer, Integer)}
      */
-    public String updateStatusToPassed(String userAccount, Integer positionId) {
-        // 参数验证
-        if (userAccount == null || userAccount.trim().isEmpty()) {
-            return "用户账号不能为空";
-        }
-        if (positionId == null) {
-            return "岗位ID不能为空";
-        }
-        
-        // 检查记录是否存在
-        int exists = resumeDeliveryMapper.checkDeliveryExists(userAccount, positionId);
-        if (exists <= 0) {
-            return "状态更新失败：投递记录不存在";
-        }
-        
-        int rows = resumeDeliveryMapper.updateStatusToPassed(userAccount, positionId);
-        return rows > 0 ? "面试通过" : "无法标记通过：请先发送邀约";
+    @Deprecated
+  public String updateStatusToPassed(String userAccount, Integer positionId) {
+        return updateDeliveryStatus(userAccount, positionId, ResumeDelivery.STATUS_PASSED);
     }
 
     /**

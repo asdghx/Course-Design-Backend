@@ -1,8 +1,9 @@
 package com.example.demo.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.demo.common.Result;
 import com.example.demo.common.ValidationUtils;
-import com.example.demo.entity.Position;
 import com.example.demo.entity.vo.PositionVO;
 import com.example.demo.service.PositionManagementService;
 import com.example.demo.service.PositionRecommendationService;
@@ -10,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 /**
  * 岗位相关API控制器
@@ -29,6 +29,8 @@ public class PositionController {
         this.positionRecommendationService = positionRecommendationService;
     }
 
+    // ==================== 岗位推荐相关接口 ====================
+
     /**
      * 用户推荐接口
      * 根据用户浏览历史提供个性化岗位推荐
@@ -46,19 +48,48 @@ public class PositionController {
         
         return Result.ok(resultPage);
     }
-    
+
+    /**
+     * 基于位置的岗位推荐接口
+     */
+    @PostMapping("/getPositionByLocation")
+    public Result<List<PositionVO>> getPositionByLocation(
+            @RequestParam("latitude") Double latitude,
+            @RequestParam("longitude") Double longitude,
+            @RequestParam("maxDistance") Double maxDistance){
+        System.out.println(latitude+"+"+longitude);
+        List<PositionVO> positions = positionRecommendationService.getLocationRecommendations(latitude, longitude, maxDistance);
+        
+        if (positions == null) {
+            return Result.fail("参数错误");
+        }
+        
+        System.out.println("=== 按地址推送请求 ===");
+        System.out.println("用户位置：纬度=" + latitude + ", 经度=" + longitude);
+        System.out.println("最大距离：" + maxDistance + "米");
+        System.out.println("匹配岗位数：" + positions.size());
+        for (PositionVO p : positions) {
+            System.out.println("岗位 ID: " + p.getId() + ", 距离：" + String.format("%.2f", p.getDistance()) + "米");
+        }
+        System.out.println("========================");
+        
+        return Result.ok(positions);
+    }
+
+    // ==================== 岗位管理相关接口 ====================
+
     /**
      * 企业岗位列表接口
      * 根据企业账号查询发布的岗位（若未提供企业账号则返回所有岗位）
      */
     @GetMapping("/getPositionListByEmployer")
-    public Result<com.baomidou.mybatisplus.core.metadata.IPage<PositionVO>> getPositionListByEmployer(
+    public Result<IPage<PositionVO>> getPositionListByEmployer(
             @RequestParam(value = "employerAccount", required = false) String employerAccount,
             @RequestParam(value = "currentPage", defaultValue = "1") Integer currentPage,
             @RequestParam(value = "pageSize", defaultValue = "8") Integer pageSize){
             
         // 使用 PositionManagementService 返回岗位列表
-        com.baomidou.mybatisplus.core.metadata.IPage<PositionVO> positionPage = positionManagementService.getPositionListByEmployerAccountWithPagination(
+        IPage<PositionVO> positionPage = positionManagementService.getPositionListByEmployerAccountWithPagination(
             employerAccount, currentPage, pageSize);
         return Result.ok(positionPage);
     }
@@ -68,32 +99,24 @@ public class PositionController {
      * 返回所有岗位的分页数据
      */
     @GetMapping("/getPositionListByPage")
-    public Result<com.baomidou.mybatisplus.core.metadata.IPage<PositionVO>> getPositionListByPage(
+    public Result<IPage<PositionVO>> getPositionListByPage(
             @RequestParam(value = "currentPage", defaultValue = "1") Integer currentPage,
             @RequestParam(value = "pageSize", defaultValue = "8") Integer pageSize,
             @RequestParam(value = "userAccount", required = false) String userAccount){
         
         // 如果有 userAccount 参数，可能是需要推荐逻辑，否则返回普通分页
         // 这里保持兼容性，如果没有 userAccount 则返回所有岗位的分页数据
-        com.baomidou.mybatisplus.core.metadata.IPage<PositionVO> positionPage = positionManagementService.getAllPositionsPaged(currentPage, pageSize);
+        IPage<PositionVO> positionPage = positionManagementService.getAllPositionsPaged(currentPage, pageSize);
         return Result.ok(positionPage);
-    }
-    
-    /**
-     * 删除岗位接口
-     */
-    @PostMapping("/deletePosition")
-    public Result<String> deletePosition(
-            @RequestParam("positionId") Integer positionId){
-        String msg = positionManagementService.deletePositionById(positionId);
-        return msg.equals("删除岗位成功") ? Result.ok(msg) : Result.fail(msg);
     }
 
     /**
-     * 创建岗位接口
+     * 保存岗位接口（创建或更新）
+     * 如果提供 positionId 则更新，否则创建新岗位
      */
-    @PostMapping("/createPosition")
-    public Result<String> createPosition(
+    @PostMapping("/savePosition")
+    public Result<String> savePosition(
+            @RequestParam(value = "positionId", required = false) Integer positionId,
             @RequestParam("employerAccount") String employerAccount,
             @RequestParam(value = "salaryMin", required = false) Integer salaryMin,
             @RequestParam(value = "salaryMax", required = false) Integer salaryMax,
@@ -115,58 +138,24 @@ public class PositionController {
         }
         
         // 2. 调用 Service 执行业务逻辑
-        String msg = positionManagementService.createPosition(employerAccount, salaryMin, salaryMax, jobDescription, workLocation, universityName, latitude, longitude);
-        return msg.equals("添加岗位成功") ? Result.ok(msg) : Result.fail(msg);
-
-    }
-
-    @PostMapping("/getPositionByLocation")
-    public Result<List<PositionVO>> getPositionByLocation(
-            @RequestParam("latitude") Double latitude,
-            @RequestParam("longitude") Double longitude,
-            @RequestParam("maxDistance") Double maxDistance){
-        
-        List<PositionVO> positions = positionRecommendationService.getLocationRecommendations(latitude, longitude, maxDistance);
-        
-        if (positions == null) {
-            return Result.fail("参数错误");
+        String msg;
+        if (positionId != null) {
+            // 更新岗位
+            msg = positionManagementService.updatePositionById(positionId, salaryMin, salaryMax, jobDescription, workLocation, universityName, latitude, longitude);
+        } else {
+            // 创建岗位
+            msg = positionManagementService.createPosition(employerAccount, salaryMin, salaryMax, jobDescription, workLocation, universityName, latitude, longitude);
         }
-        
-        System.out.println("=== 按地址推送请求 ===");
-        System.out.println("用户位置：纬度=" + latitude + ", 经度=" + longitude);
-        System.out.println("最大距离：" + maxDistance + "米");
-        System.out.println("匹配岗位数：" + positions.size());
-        for (PositionVO p : positions) {
-            System.out.println("岗位 ID: " + p.getId() + ", 距离：" + String.format("%.2f", p.getDistance()) + "米");
-        }
-        System.out.println("========================");
-        
-        return Result.ok(positions);
+        return msg.endsWith("成功") ? Result.ok(msg) : Result.fail(msg);
     }
 
     /**
-     * 更新岗位接口
+     * 删除岗位接口
      */
-    @PostMapping("/updatePosition")
-    public Result<String> updatePosition(
-            @RequestParam("positionId") Integer positionId,
-            @RequestParam(value = "salaryMin", required = false) Integer salaryMin,
-            @RequestParam(value = "salaryMax", required = false) Integer salaryMax,
-            @RequestParam("jobDescription") String jobDescription,
-            @RequestParam(value = "workLocation", required = false, defaultValue = "") String workLocation,
-            @RequestParam(value = "universityName", required = false) String universityName,
-            @RequestParam(value = "latitude", required = false) Double latitude,
-            @RequestParam(value = "longitude", required = false) Double longitude
-    ){
-        // 1. 参数验证 - 使用公共验证方法校验岗位数据
-        String errorMsg = ValidationUtils.validatePositionData(jobDescription, salaryMin, salaryMax, workLocation, latitude, longitude);
-        if (errorMsg != null) {
-            return Result.badRequest(errorMsg);
-        }
-        
-        // 2. 调用 Service 执行业务逻辑
-        String msg = positionManagementService.updatePositionById(positionId, salaryMin, salaryMax, jobDescription, workLocation, universityName, latitude, longitude);
-        return msg.equals("更新岗位成功") ? Result.ok(msg) : Result.fail(msg);
-
+    @PostMapping("/deletePosition")
+    public Result<String> deletePosition(
+            @RequestParam("positionId") Integer positionId){
+        String msg = positionManagementService.deletePositionById(positionId);
+        return msg.equals("删除岗位成功") ? Result.ok(msg) : Result.fail(msg);
     }
 }

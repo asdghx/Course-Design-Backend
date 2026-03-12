@@ -90,14 +90,21 @@
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
         
-        <!-- Knife4j API文档 -->
+        <!-- Knife4j API 文档 -->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-spring-boot-starter</artifactId>
             <version>3.0.3</version>
         </dependency>
-        
-        <!-- Redis相关依赖已移除 -->
+                
+        <!-- HanLP 中文分词 -->
+        <dependency>
+            <groupId>com.hankcs</groupId>
+            <artifactId>hanlp</artifactId>
+            <version>portable-1.8.4</version>
+        </dependency>
+                
+        <!-- Redis 相关依赖已移除 -->
 
 
 

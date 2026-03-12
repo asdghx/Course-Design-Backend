@@ -42,7 +42,7 @@ public interface CollectionMapper extends BaseMapper<Collection> {
 
     /**
      * 删除文章收藏
-     * @param articleId 文章ID
+     * @param articleId 文章 ID
      * @param userAccount 用户账号
      * @return 影响行数
      */

@@ -3,7 +3,6 @@ package com.example.demo.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.demo.common.Result;
-import com.example.demo.common.ValidationUtils;
 import com.example.demo.entity.Article;
 import com.example.demo.entity.Collection;
 import com.example.demo.service.CollectionService;
@@ -11,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 收藏相关API控制器
+ * 收藏相关 API 控制器
  * 提供文章收藏、取消收藏、查询等功能
  */
 @RestController
@@ -26,17 +25,9 @@ public class CollectionController {
      */
     @PostMapping("/createCollection")
     public Result<String> createCollection(
-            @RequestParam(value = "userAccount", required = false) String userAccount,
+            @RequestParam("userAccount") String userAccount,
             @RequestParam("articleId") Integer articleId
     ){
-        // 参数校验
-        if (ValidationUtils.isEmpty(userAccount)) {
-            return Result.badRequest("用户账号不能为空");
-        }
-        if (articleId == null) {
-            return Result.badRequest("文章ID不能为空");
-        }
-        
         String msg = collectionService.createCollection(articleId, userAccount);
         return msg.equals("收藏成功") ? Result.ok(msg) : Result.fail(msg);
     }
@@ -46,17 +37,9 @@ public class CollectionController {
      */
     @PostMapping("/deleteCollection")
     public Result<String> deleteCollection(
-            @RequestParam(value = "userAccount", required = false) String userAccount,
+            @RequestParam("userAccount") String userAccount,
             @RequestParam("articleId") Integer articleId
     ){
-        // 参数校验
-        if (ValidationUtils.isEmpty(userAccount)) {
-            return Result.badRequest("用户账号不能为空");
-        }
-        if (articleId == null) {
-            return Result.badRequest("文章ID不能为空");
-        }
-        
         String msg = collectionService.deleteCollection(articleId, userAccount);
         return msg.equals("取消收藏成功") ? Result.ok(msg) : Result.fail(msg);
     }
@@ -69,7 +52,7 @@ public class CollectionController {
             @RequestParam("userAccount") String userAccount,
             @RequestParam("articleId") Integer articleId
     ){
-        Collection collection = collectionService.getCollectionByUserAccountAndArticleId(userAccount,articleId);
+        Collection collection = collectionService.getCollectionByUserAccountAndArticleId(userAccount, articleId);
         return Result.ok(collection);
     }
     

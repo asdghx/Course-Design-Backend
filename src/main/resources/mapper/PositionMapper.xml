@@ -28,8 +28,8 @@
         ORDER BY j.update_time DESC
     </select>
     
-    <!-- HR 管理岗位分页查询（只按企业账号过滤，不限制学校和状态） -->
-    <select id="selectHrPositions" resultType="com.example.demo.entity.Position">
+    <!-- 分页查询岗位信息（支持按企业账号过滤，不限制学校和状态） -->
+    <select id="selectPositionsDynamic" resultType="com.example.demo.entity.Position">
         SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max,
                j.work_location, j.university_name, j.latitude, j.longitude,
                e.company_name
@@ -56,8 +56,8 @@
         LIMIT 10
     </select>
     
-    <!-- 插入岗位信息 -->
-    <insert id="insertPosition" parameterType="com.example.demo.entity.Position">
+    <!-- 岗位 UPSERT 操作（有则更新，无则插入） -->
+    <insert id="upsertPosition" parameterType="com.example.demo.entity.Position">
         INSERT INTO job (
             employer_account, 
             salary_min,
@@ -79,22 +79,17 @@
             #{latitude},
             #{longitude}
         )
+        ON DUPLICATE KEY UPDATE
+            employer_account = VALUES(employer_account),
+            salary_min = VALUES(salary_min),
+            salary_max = VALUES(salary_max),
+            job_description = VALUES(job_description),
+            work_location = VALUES(work_location),
+            status = VALUES(status),
+            university_name = VALUES(university_name),
+            latitude = VALUES(latitude),
+            longitude = VALUES(longitude)
     </insert>
-    
-    <!-- 更新岗位信息 -->
-    <update id="updatePosition" parameterType="com.example.demo.entity.Position">
-        UPDATE job SET 
-            employer_account = #{employerAccount},
-            salary_min = #{salaryMin},
-            salary_max = #{salaryMax},
-            job_description = #{jobDescription},
-            work_location = #{workLocation},
-            status = #{status},
-            university_name = #{universityName},
-            latitude = #{latitude},
-            longitude = #{longitude}
-        WHERE id = #{id}
-    </update>
     
     <!-- 根据经纬度范围查询岗位 (粗略过滤) -->
     <select id="selectByLocationRange" resultType="com.example.demo.entity.Position">

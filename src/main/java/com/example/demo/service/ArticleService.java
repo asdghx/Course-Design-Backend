@@ -15,44 +15,34 @@ import org.springframework.stereotype.Service;
 public class ArticleService {
 
     private final ArticleMapper articleMapper;
-    
-    public ArticleService(ArticleMapper articleMapper) {
+   public ArticleService(ArticleMapper articleMapper) {
         this.articleMapper = articleMapper;
-    }
-
-    /**
-     * 获取文章完整信息（包含内容和基本信息）
-     */
-    public Article getArticleBase(String id) {
-        if (id == null || id.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            return articleMapper.selectArticleBase(Integer.parseInt(id));
-        } catch (NumberFormatException e) {
-            return null;
-        }
     }
 
     /**
      * 获取文章内容（纯文本）
      */
-    public String getArticleContentOnly(String id) {
-        if (id == null || id.trim().isEmpty()) {
+  public String getArticleContentOnly(Integer id) {
+        if (id == null) {
             return null;
         }
-        try {
-            return articleMapper.selectArticleContent(Integer.parseInt(id));
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return articleMapper.selectArticleContent(id);
     }
 
     /**
      * 分页获取文章列表
      */
-    public IPage<Article> getArticlePage(String articleType, int currentPage, int pageSize) {
+  public IPage<Article> getArticlePage(String articleType, Integer currentPage, Integer pageSize) {
         Page<Article> page = new Page<>(currentPage, pageSize);
         return articleMapper.selectArticlePage(page, articleType);
+    }
+    
+    /**
+     * 增加浏览次数
+     */
+  public void incrementViewCount(Integer id) {
+        if (id != null) {
+            articleMapper.incrementViewCount(id);
+        }
     }
 }

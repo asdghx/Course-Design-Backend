@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 public class EmployerManagementService {
 
     private final EmployerMapper employerMapper;
-    
     public EmployerManagementService(EmployerMapper employerMapper) {
         this.employerMapper = employerMapper;
     }

@@ -30,7 +30,7 @@ public class ResumeDeliveryController {
             @RequestParam("positionId") Integer positionId) {
         
         String result = resumeDeliveryService.addResumeDelivery(userAccount, positionId);
-        if (result.equals("简历投递成功")) {
+        if (result.endsWith("成功")) {
             return Result.ok(result);
         } else {
             return Result.fail(result);
@@ -70,46 +70,15 @@ public class ResumeDeliveryController {
     }
 
     /**
-     * 修改投递状态为已拒绝(0)
+     * 更新投递状态（统一接口）
      */
-    @PutMapping("/updateStatusToRejected")
-    public Result<String> updateStatusToRejected(
+    @PutMapping("/updateDeliveryStatus")
+  public Result<String> updateDeliveryStatus(
             @RequestParam("userAccount") String userAccount,
-            @RequestParam("positionId") Integer positionId) {
+            @RequestParam("positionId") Integer positionId,
+            @RequestParam("status") Integer status) {
         
-        String result = resumeDeliveryService.updateStatusToRejected(userAccount, positionId);
-        if (result.startsWith("状态更新成功")) {
-            return Result.ok(result);
-        } else {
-            return Result.fail(result);
-        }
-    }
-
-    /**
-     * 修改投递状态为邀约面试(2)
-     */
-    @PutMapping("/updateStatusToInterview")
-    public Result<String> updateStatusToInterview(
-            @RequestParam("userAccount") String userAccount,
-            @RequestParam("positionId") Integer positionId) {
-        
-        String result = resumeDeliveryService.updateStatusToInterview(userAccount, positionId);
-        if (result.startsWith("状态更新成功")) {
-            return Result.ok(result);
-        } else {
-            return Result.fail(result);
-        }
-    }
-
-    /**
-     * 修改投递状态为面试通过(3)
-     */
-    @PutMapping("/updateStatusToPassed")
-    public Result<String> updateStatusToPassed(
-            @RequestParam("userAccount") String userAccount,
-            @RequestParam("positionId") Integer positionId) {
-        
-        String result = resumeDeliveryService.updateStatusToPassed(userAccount, positionId);
+        String result = resumeDeliveryService.updateDeliveryStatus(userAccount, positionId, status);
         if (result.startsWith("状态更新成功")) {
             return Result.ok(result);
         } else {
