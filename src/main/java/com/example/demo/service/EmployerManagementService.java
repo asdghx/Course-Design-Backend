@@ -36,31 +36,9 @@ public class EmployerManagementService {
             String companyProfile
     ){
         // 参数验证
-        if (ValidationUtils.isEmpty(employerAccount)) {
-            return "企业账号不能为空";
-        }
-        if (ValidationUtils.isEmpty(companyName)) {
-            return "企业名称不能为空";
-        }
-        if (ValidationUtils.isEmpty(contactPhone)) {
-            return "联系电话不能为空";
-        }
-        
-        // 验证手机号格式
-        if (!ValidationUtils.isValidPhone(contactPhone)) {
-            return "手机号格式不正确";
-        }
-        
-        // 验证邮箱格式（如果提供了）
-        if (contactEmail != null && !contactEmail.trim().isEmpty()) {
-            if (!ValidationUtils.isValidEmail(contactEmail)) {
-                return "邮箱格式不正确";
-            }
-        }
-        
-        // 验证企业名称不能包含数字
-        if (companyName != null && !ValidationUtils.isValidName(companyName)) {
-            return "企业名称不能包含数字";
+        String errorMsg = ValidationUtils.validateEmployerParams(employerAccount, companyName, contactPhone, contactEmail, companyProfile);
+        if (errorMsg != null) {
+            return errorMsg;
         }
         
         int rows = employerMapper.upsertEmployer(createEmployer(

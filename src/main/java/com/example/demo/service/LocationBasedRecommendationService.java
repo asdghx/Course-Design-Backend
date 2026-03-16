@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 import com.example.demo.entity.Position;
 import com.example.demo.mapper.PositionMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,8 +18,11 @@ import java.util.stream.Collectors;
 @Service
 public class LocationBasedRecommendationService {
 
-    @Autowired
-    private PositionMapper positionMapper;
+    private final PositionMapper positionMapper;
+
+    public LocationBasedRecommendationService(PositionMapper positionMapper) {
+        this.positionMapper = positionMapper;
+    }
 
     /**
      * 根据位置获取附近岗位推荐 (按距离排序)

@@ -23,4 +23,10 @@ public interface EmployeeMapper extends BaseMapper<Employee> {
            "<foreach item='account' collection='userAccounts' open='(' separator=',' close=')'>#{account}</foreach>" +
            "</script>")
     List<Employee> selectBatchByUserAccounts(@Param("userAccounts") List<String> userAccounts);
+
+    /**
+     * 根据账号查询手机号
+     */
+    @Select("SELECT phone_number FROM employee WHERE user_account = #{userAccount}")
+    String selectPhoneNumberByAccount(@Param("userAccount") String userAccount);
 }

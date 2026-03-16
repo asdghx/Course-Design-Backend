@@ -99,6 +99,7 @@ public class PositionManagementService {
         position.setEmployerAccount(employerAccount);
         position.setSalaryMin(salaryMin);
         position.setSalaryMax(salaryMax);
+        position.setSalaryUnit("月"); // 默认单位为月
         position.setJobDescription(jobDescription);
         position.setWorkLocation(workLocation);
         position.setUniversityName(universityName); // 大学名称，为空表示校外岗位

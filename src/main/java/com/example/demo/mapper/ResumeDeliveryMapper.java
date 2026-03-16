@@ -51,22 +51,29 @@ public interface ResumeDeliveryMapper extends BaseMapper<ResumeDelivery> {
      * 修改投递状态为已拒绝 (0)
      * 任何时候都可以拒绝
      */
-    @Update("UPDATE resumedelivery SET delivery_status = 0, status_update_time = NOW() WHERE user_account = #{userAccount} AND position_id = #{positionId} AND delivery_status != 0")
+    @Update("UPDATE resumedelivery SET delivery_status = 0, status_update_time = NOW(), has_update = 1 WHERE user_account = #{userAccount} AND position_id = #{positionId} AND delivery_status != 0")
     int updateStatusToRejected(@Param("userAccount") String userAccount, @Param("positionId") Integer positionId);
 
     /**
      * 修改投递状态为邀约面试 (2)
      * 只能从未处理状态邀约
      */
-    @Update("UPDATE resumedelivery SET delivery_status = 2, status_update_time = NOW() WHERE user_account = #{userAccount} AND position_id = #{positionId} AND delivery_status = 1")
+    @Update("UPDATE resumedelivery SET delivery_status = 2, status_update_time = NOW(), has_update = 1 WHERE user_account = #{userAccount} AND position_id = #{positionId} AND delivery_status = 1")
     int updateStatusToInterview(@Param("userAccount") String userAccount, @Param("positionId") Integer positionId);
 
     /**
      * 修改投递状态为面试通过 (3)
      * 只能从邀约面试状态修改为面试通过
      */
-    @Update("UPDATE resumedelivery SET delivery_status = 3, status_update_time = NOW() WHERE user_account = #{userAccount} AND position_id = #{positionId} AND delivery_status = 2")
+    @Update("UPDATE resumedelivery SET delivery_status = 3, status_update_time = NOW(), has_update = 1 WHERE user_account = #{userAccount} AND position_id = #{positionId} AND delivery_status = 2")
     int updateStatusToPassed(@Param("userAccount") String userAccount, @Param("positionId") Integer positionId);
+    
+    /**
+     * 修改投递状态为已入职 (4)
+     * 只能从面试通过状态修改为已入职
+     */
+    @Update("UPDATE resumedelivery SET delivery_status = 4, status_update_time = NOW(), has_update = 1 WHERE user_account = #{userAccount} AND position_id = #{positionId} AND delivery_status = 3")
+    int updateStatusToHired(@Param("userAccount") String userAccount, @Param("positionId") Integer positionId);
 
     /**
      * 根据用户账号查询投递记录详情（包含岗位信息和投递状态）
@@ -77,13 +84,33 @@ public interface ResumeDeliveryMapper extends BaseMapper<ResumeDelivery> {
             "p.job_description as jobDescription, " +
             "p.salary_min as salaryMin, " +
             "p.salary_max as salaryMax, " +
+            "p.salary_unit as salaryUnit, " +
             "p.work_location as workLocation, " +
             "p.university_name as universityName, " +
             "rd.delivery_status as deliveryStatus, " +
-            "rd.create_time as deliveryCreateTime " +
+            "rd.create_time as deliveryCreateTime, " +
+            "rd.has_update as hasUpdate " +
             "FROM resumedelivery rd " +
             "JOIN job p ON rd.position_id = p.id " +
             "WHERE rd.user_account = #{userAccount}")
     List<com.example.demo.entity.vo.UserDeliveryVO> selectDeliveriesWithPositionInfo(@Param("userAccount") String userAccount);
+
+    /**
+     * 将用户的所有投递记录标记为已读（has_update = 0）
+     */
+    @Update("UPDATE resumedelivery SET has_update = 0 WHERE user_account = #{userAccount}")
+    int markAsRead(@Param("userAccount") String userAccount);
+
+    /**
+     * 统计用户有多少条未读更新（has_update = 1）
+     */
+    @Select("SELECT COUNT(*) FROM resumedelivery WHERE user_account = #{userAccount} AND has_update = 1")
+    int countUnreadUpdates(@Param("userAccount") String userAccount);
+
+    /**
+     * 删除投递记录
+     */
+    @Delete("DELETE FROM resumedelivery WHERE user_account = #{userAccount} AND position_id = #{positionId}")
+    int deleteDelivery(@Param("userAccount") String userAccount, @Param("positionId") Integer positionId);
 
 }

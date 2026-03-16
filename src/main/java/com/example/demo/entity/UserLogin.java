@@ -5,10 +5,6 @@ import lombok.Data;
 
 import java.util.Date;
 
-/**
- * 用户登录实体
- * 对应数据库表：user_login
- */
 @Data
 public class UserLogin {
     @TableId(type = IdType.AUTO)

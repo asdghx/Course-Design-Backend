@@ -8,4 +8,18 @@
         FROM user_login 
         WHERE user_account = #{userAccount} AND user_type = #{userType}
     </select>
+
+    <!-- 根据账号查询用户（不限制类型） -->
+    <select id="selectByAccount" resultType="com.example.demo.entity.UserLogin">
+        SELECT user_account, user_password, salt_value, user_type
+        FROM user_login 
+        WHERE user_account = #{userAccount}
+    </select>
+
+    <!-- 更新用户密码 -->
+    <update id="updatePassword">
+        UPDATE user_login 
+        SET user_password = #{userPassword}, salt_value = #{saltValue}
+        WHERE user_account = #{userAccount}
+    </update>
 </mapper>

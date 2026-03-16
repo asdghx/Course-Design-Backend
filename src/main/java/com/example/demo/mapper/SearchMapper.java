@@ -2,6 +2,7 @@ package com.example.demo.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.demo.entity.Article;
+import com.example.demo.entity.Position;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -20,4 +21,20 @@ public interface SearchMapper extends BaseMapper<Article> {
      */
     List<Article> searchByKeywords(@Param("keywords") List<String> keywords,
                                    @Param("articleType") String articleType);
+
+    /**
+     * 搜索用户收藏的文章
+     * @param userAccount 用户账号
+     * @param keywords 分词后的关键词列表
+     * @return 匹配的文章列表
+     */
+    List<Article> searchCollectedArticles(@Param("userAccount") String userAccount,
+                                          @Param("keywords") List<String> keywords);
+
+    /**
+     * 搜索校外岗位（粗筛）
+     * @param keywords 分词后的关键词列表
+     * @return 匹配的岗位列表
+     */
+    List<Position> searchOutsidePositions(@Param("keywords") List<String> keywords);
 }

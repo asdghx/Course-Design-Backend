@@ -4,7 +4,7 @@
 
     <!-- 分页查询岗位信息（支持按学校名称过滤） -->
     <select id="selectPositionPage" resultType="com.example.demo.entity.Position">
-        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max,
+        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max, j.salary_unit,
                j.work_location, j.university_name, j.latitude, j.longitude,
                e.company_name
         FROM job j
@@ -30,7 +30,7 @@
     
     <!-- 分页查询岗位信息（支持按企业账号过滤，不限制学校和状态） -->
     <select id="selectPositionsDynamic" resultType="com.example.demo.entity.Position">
-        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max,
+        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max, j.salary_unit,
                j.work_location, j.university_name, j.latitude, j.longitude,
                e.company_name
         FROM job j
@@ -45,7 +45,7 @@
     
     <!-- 获取随机岗位列表（仅校外岗位） -->
     <select id="selectRandomPositions" resultType="com.example.demo.entity.Position">
-        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max,
+        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max, j.salary_unit,
                j.work_location, j.university_name, j.latitude, j.longitude,
                e.company_name
         FROM job j
@@ -62,6 +62,7 @@
             employer_account, 
             salary_min,
             salary_max,
+            salary_unit,
             job_description, 
             work_location, 
             status,
@@ -72,6 +73,7 @@
             #{employerAccount}, 
             #{salaryMin}, 
             #{salaryMax},
+            #{salaryUnit},
             #{jobDescription}, 
             #{workLocation}, 
             #{status},
@@ -83,6 +85,7 @@
             employer_account = VALUES(employer_account),
             salary_min = VALUES(salary_min),
             salary_max = VALUES(salary_max),
+            salary_unit = VALUES(salary_unit),
             job_description = VALUES(job_description),
             work_location = VALUES(work_location),
             status = VALUES(status),
@@ -93,7 +96,7 @@
     
     <!-- 根据经纬度范围查询岗位 (粗略过滤) -->
     <select id="selectByLocationRange" resultType="com.example.demo.entity.Position">
-        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max,
+        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max, j.salary_unit,
                j.work_location, j.university_name, j.latitude, j.longitude,
                e.company_name
         FROM job j

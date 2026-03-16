@@ -4,22 +4,23 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.demo.common.Result;
 import com.example.demo.entity.Article;
 import com.example.demo.service.ArticleService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 文章相关 API 控制器
- * 提供文章列表和详情查询功能
+ * 文章控制器
  */
 @RestController
 @RequestMapping("/api/article")
 @CrossOrigin("*")
 public class ArticleController {
-    @Autowired
-    ArticleService articleService;
+    private final ArticleService articleService;
+
+    public ArticleController(ArticleService articleService) {
+        this.articleService = articleService;
+    }
 
     /**
-     * 获取文章分页列表（仅基本信息，不包含内容）
+     * 分页获取文章列表
      */
     @GetMapping("/getArticlePage")
    public Result<IPage<Article>> getArticlePage(
@@ -38,7 +39,7 @@ public class ArticleController {
     }
 
     /**
-     * 获取文章内容（纯文本）并增加浏览次数
+     * 获取文章内容并增加浏览次数
      */
     @GetMapping("/getArticleContent")
    public Result<String> getArticleContent(

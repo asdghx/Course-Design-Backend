@@ -21,20 +21,12 @@ public class UserPositionHistoryService {
      * 记录岗位浏览行为
      */
     public String recordPositionBrowse(String userAccount, Integer positionId) {
-        // 1. 参数验证
-        if (userAccount == null || userAccount.trim().isEmpty()) {
-            return "用户账号不能为空";
-        }
-        if (positionId == null) {
-            return "岗位 ID 不能为空";
-        }
-        
-        // 2. 创建历史记录对象
+        // 创建历史记录对象
         UserPositionHistory history = new UserPositionHistory();
         history.setUserAccount(userAccount);
         history.setPositionId(positionId);
         
-        // 3. 保存浏览记录
+        // 保存浏览记录
         int rows = userPositionHistoryMapper.recordBrowse(history);
         return rows > 0 ? "浏览记录保存成功" : "浏览记录保存失败";
     }
@@ -43,20 +35,12 @@ public class UserPositionHistoryService {
      * 记录岗位投递行为
      */
     public String recordPositionDelivery(String userAccount, Integer positionId) {
-        // 1. 参数验证
-        if (userAccount == null || userAccount.trim().isEmpty()) {
-            return "用户账号不能为空";
-        }
-        if (positionId == null) {
-            return "岗位 ID 不能为空";
-        }
-        
-        // 2. 创建历史记录对象
+        // 创建历史记录对象
         UserPositionHistory history = new UserPositionHistory();
         history.setUserAccount(userAccount);
         history.setPositionId(positionId);
         
-        // 3. 保存投递记录
+        // 保存投递记录
         int rows = userPositionHistoryMapper.recordDelivery(history);
         return rows > 0 ? "投递记录保存成功" : "投递记录保存失败";
     }
@@ -65,15 +49,7 @@ public class UserPositionHistoryService {
      * 记录岗位通过行为
      */
     public String recordPositionPass(String userAccount, Integer positionId) {
-        // 1. 参数验证
-        if (userAccount == null || userAccount.trim().isEmpty()) {
-            return "用户账号不能为空";
-        }
-        if (positionId == null) {
-            return "岗位 ID 不能为空";
-        }
-        
-        // 2. 增加通过次数
+        // 增加通过次数
         userPositionHistoryMapper.incrementPassCount(userAccount, positionId);
         return "通过记录保存成功";
     }

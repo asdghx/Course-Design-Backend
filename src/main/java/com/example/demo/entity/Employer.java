@@ -5,11 +5,6 @@ import lombok.Data;
 
 import java.util.Date;
 
-/**
- * 雇主/企业实体类
- * 对应数据库表 employer
- * employerAccount 为主键，关联 user_login 表
- */
 @Data
 public class Employer {
     @TableId(type = IdType.NONE)

@@ -17,4 +17,16 @@ public interface UserLoginMapper extends BaseMapper<UserLogin> {
      */
     UserLogin selectByAccountAndType(@Param("userAccount") String userAccount, @Param("userType") Integer userType);
 
+    /**
+     * 根据账号查询用户（不限制类型）
+     */
+    UserLogin selectByAccount(@Param("userAccount") String userAccount);
+
+    /**
+     * 更新用户密码
+     */
+    int updatePassword(@Param("userAccount") String userAccount, 
+                       @Param("userPassword") String userPassword, 
+                       @Param("saltValue") String saltValue);
+
 }

@@ -20,9 +20,15 @@ public interface EmployerMapper extends BaseMapper<Employer> {
             "VALUES (#{employerAccount}, #{companyName}, #{contactPhone}, #{contactEmail}, #{companyProfile}, NOW()) " +
             "ON DUPLICATE KEY UPDATE " +
             "company_name=VALUES(company_name), " +
-            "contact_phone=VALUES(contactPhone), " +
-            "contact_email=VALUES(contactEmail), " +
-            "company_profile=VALUES(companyProfile), " +
+            "contact_phone=VALUES(contact_phone), " +
+            "contact_email=VALUES(contact_email), " +
+            "company_profile=VALUES(company_profile), " +
             "update_time=NOW()")
     int upsertEmployer(Employer employer);
+
+    /**
+     * 根据账号查询手机号
+     */
+    @Select("SELECT contact_phone FROM employer WHERE employer_account = #{employerAccount}")
+    String selectContactPhoneByAccount(@Param("employerAccount") String employerAccount);
 }

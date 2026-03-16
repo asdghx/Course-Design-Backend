@@ -16,11 +16,7 @@
     <select id="searchByKeywords" resultMap="ArticleResult">
         SELECT id, article_type, title, content, author_account, create_time, view_count
         FROM article
-        WHERE 1=1
-        <!-- 如果指定了文章类型，则添加类型过滤 -->
-        <if test="articleType != null and articleType != ''">
-            AND article_type = #{articleType}
-        </if>
+        WHERE article_type = #{articleType}
         <!-- 分词后的各个词挨个匹配，只要匹配任意一个词就返回 -->
         AND (
             <foreach collection="keywords" item="keyword" separator="OR">
@@ -29,6 +25,42 @@
             </foreach>
         )
         ORDER BY create_time DESC
+    </select>
+
+    <!-- 搜索用户收藏的文章 -->
+    <select id="searchCollectedArticles" resultMap="ArticleResult">
+        SELECT id, article_type, title, content, author_account, create_time, view_count
+        FROM article
+        WHERE id IN (
+            SELECT article_id FROM collection WHERE user_account = #{userAccount}
+        )
+        <!-- 分词后的各个词挨个匹配，只要匹配任意一个词就返回 -->
+        AND (
+            <foreach collection="keywords" item="keyword" separator="OR">
+                title LIKE CONCAT('%', #{keyword}, '%')
+                OR content LIKE CONCAT('%', #{keyword}, '%')
+            </foreach>
+        )
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 搜索校外岗位 -->
+    <select id="searchOutsidePositions" resultType="com.example.demo.entity.Position">
+        SELECT j.id, j.employer_account, j.job_description, j.salary_min, j.salary_max, j.salary_unit,
+               j.work_location, j.university_name, j.latitude, j.longitude,
+               e.company_name
+        FROM job j
+        LEFT JOIN employer e ON j.employer_account = e.employer_account
+        WHERE (j.university_name IS NULL OR j.university_name = '')
+        <!-- 分词后的各个词挨个匹配，只要匹配任意一个词就返回 -->
+        AND (
+            <foreach collection="keywords" item="keyword" separator="OR">
+                j.job_description LIKE CONCAT('%', #{keyword}, '%')
+                OR j.work_location LIKE CONCAT('%', #{keyword}, '%')
+                OR e.company_name LIKE CONCAT('%', #{keyword}, '%')
+            </foreach>
+        )
+        ORDER BY j.update_time DESC
     </select>
 
 </mapper>

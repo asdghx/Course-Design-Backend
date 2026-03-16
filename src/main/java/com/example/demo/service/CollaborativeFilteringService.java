@@ -5,7 +5,6 @@ import com.example.demo.entity.Position;
 import com.example.demo.entity.UserPositionHistory;
 import com.example.demo.mapper.PositionMapper;
 import com.example.demo.mapper.UserPositionHistoryMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,11 +20,15 @@ import java.util.stream.Collectors;
 @Service
 public class CollaborativeFilteringService {
 
-    @Autowired
-    private UserPositionHistoryMapper userPositionHistoryMapper;
+    private final UserPositionHistoryMapper userPositionHistoryMapper;
+    private final PositionMapper positionMapper;
 
-    @Autowired
-    private PositionMapper positionMapper;
+    public CollaborativeFilteringService(
+            UserPositionHistoryMapper userPositionHistoryMapper,
+            PositionMapper positionMapper) {
+        this.userPositionHistoryMapper = userPositionHistoryMapper;
+        this.positionMapper = positionMapper;
+    }
 
     /**
      * 为指定用户生成岗位推荐列表（纯 CF 算法，仅校外岗位）
